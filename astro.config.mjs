@@ -8,7 +8,7 @@ import rehypeExternalLinks from 'rehype-external-links'
 
 export default defineConfig({
   site: 'https://compiledthoughts.dev',
-  base: 'devblog',
+  base: '/',
   integrations: [mdx(), svelte()],
   markdown: {
     shikiConfig: {
