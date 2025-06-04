@@ -4,12 +4,12 @@ import mdx from '@astrojs/mdx'
 import remarkGfm from 'remark-gfm'
 import remarkSmartypants from 'remark-smartypants'
 import rehypeExternalLinks from 'rehype-external-links'
-
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://compiledthoughts.dev',
   base: '/',
-  integrations: [mdx(), svelte()],
+  integrations: [sitemap(), mdx(), svelte()],
   markdown: {
     shikiConfig: {
       theme: 'nord',
