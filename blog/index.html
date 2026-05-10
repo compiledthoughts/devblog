@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog &mdash; Compiled Thoughts</title>
+  <meta name="description" content="Latest articles from Compiled Thoughts.">
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/theme.js"></script>
+  <script src="../assets/search.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="../index.html"><img src="../assets/img/logov5.png" alt="Compiled Thoughts" width="80" height="80"></a>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="../about.html">About</a>
+      <a href="index.html" class="active">Blog</a>
+      <button id="themeBtn" class="theme-btn">Dark</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container">
+      <h1>Blog</h1>
+
+      <div class="search-wrap">
+        <input id="search" type="search" placeholder="Search posts&hellip;" autocomplete="off">
+      </div>
+
+      <div id="postList">
+
+        <div class="post-item" data-search="what are llms large language models ai artificial intelligence deep learning transformer">
+          <h2><a href="what-are-llms.html">What Are LLMs (Large Language Models)?</a></h2>
+          <p>What Are LLMs (Large Language Models)?</p>
+          <p class="post-meta">25 May 2025</p>
+        </div>
+
+        <hr>
+
+        <div class="post-item" data-search="change default directory ollama models windows environment variable">
+          <h2><a href="change-ollama-model-dir.html">Change Default Directory for Ollama</a></h2>
+          <p>How to Change Default Directory for Ollama Models on Windows</p>
+          <p class="post-meta">25 May 2025</p>
+        </div>
+
+      </div>
+
+      <p class="no-results" id="noResults">No posts match your search.</p>
+    </div>
+  </main>
+
+  <footer>
+    <span>&copy; 2026 Compiled Thoughts</span>
+  </footer>
+</body>
+</html>

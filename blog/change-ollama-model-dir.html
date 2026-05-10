@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Change Default Directory for Ollama &mdash; Compiled Thoughts</title>
+  <meta name="description" content="How to Change Default Directory for Ollama Models on Windows">
+  <link rel="stylesheet" href="../assets/style.css">
+  <script src="../assets/theme.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="logo" href="../index.html"><img src="../assets/img/logov5.png" alt="Compiled Thoughts" width="80" height="80"></a>
+    <nav>
+      <a href="../index.html">Home</a>
+      <a href="../about.html">About</a>
+      <a href="index.html" class="active">Blog</a>
+      <button id="themeBtn" class="theme-btn">Dark</button>
+    </nav>
+  </header>
+
+  <main>
+    <div class="container">
+      <header class="post-header">
+        <p class="post-meta">25 May 2025 &mdash; 3 min read</p>
+        <h1>Change Default Directory for Ollama</h1>
+        <hr>
+      </header>
+
+      <article class="content">
+        <p>By default, Ollama stores models in:</p>
+        <pre><code>C:\Users\&lt;YourUsername&gt;\.ollama\models</code></pre>
+        <p>You can change this by setting the <code>OLLAMA_MODELS</code> environment variable.</p>
+
+        <hr>
+
+        <h2>&#x1F6E0;&#xFE0F; Steps</h2>
+
+        <h3>1. Choose a New Directory</h3>
+        <p>Example:</p>
+        <pre><code>D:\Ollama\models</code></pre>
+        <p>Create this folder if it doesn&rsquo;t already exist.</p>
+
+        <hr>
+
+        <h3>2. Set the Environment Variable</h3>
+
+        <h4>&#x2705; Temporary (Only for Current CMD Session)</h4>
+        <p>Open Command Prompt and run:</p>
+        <pre><code>set OLLAMA_MODELS=D:\Ollama\models
+ollama run llama3</code></pre>
+        <p>This setting will reset once the terminal is closed.</p>
+
+        <hr>
+
+        <h4>&#x2705; Permanent (System-wide or User-wide)</h4>
+        <ol>
+          <li>Press <strong>Win + S</strong>, search for <em>&ldquo;Environment Variables&rdquo;</em> and open <strong>&ldquo;Edit the system environment variables&rdquo;</strong>.</li>
+          <li>In the <strong>System Properties</strong> dialog, click <strong>&ldquo;Environment Variables&hellip;&rdquo;</strong></li>
+          <li>
+            Under <strong>User variables</strong> (or <strong>System variables</strong> for global scope), click <strong>New&hellip;</strong>
+            <ul>
+              <li><strong>Variable name</strong>: <code>OLLAMA_MODELS</code></li>
+              <li><strong>Variable value</strong>: <code>D:\Ollama\models</code></li>
+            </ul>
+          </li>
+          <li>Click <strong>OK &rarr; OK &rarr; OK</strong> to close all dialogs.</li>
+          <li><strong>Restart your terminal, IDE, or PC</strong> to apply changes.</li>
+        </ol>
+
+        <hr>
+
+        <h3>&#x1F4CC; Notes</h3>
+        <ul>
+          <li>The change affects only where <strong>models</strong> are stored.</li>
+          <li>Other configuration files remain in the default <code>.ollama</code> directory.</li>
+          <li>You can move existing models from the old directory to the new one to avoid re-downloading.</li>
+        </ul>
+
+        <hr>
+
+        <h2>&#x2705; Verification</h2>
+        <p>Run this to confirm:</p>
+        <pre><code>ollama run llama3</code></pre>
+        <p>Check that models are now saved in your new <code>OLLAMA_MODELS</code> path.</p>
+      </article>
+
+      <hr>
+      <p><a href="index.html">&larr; Back to Blog</a></p>
+    </div>
+  </main>
+
+  <footer>
+    <span>&copy; 2026 Compiled Thoughts</span>
+  </footer>
+</body>
+</html>
