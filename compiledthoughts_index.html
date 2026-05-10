@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compiled Thoughts — Local AI Infrastructure Research</title>
+<meta name="description" content="Research notes on running frontier AI models on consumer hardware. Local inference, MoE optimization, and the path to private AI for everyone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0c0a;
+    --bg2: #141412;
+    --bg3: #1c1c19;
+    --border: #252520;
+    --border2: #2e2e28;
+    --text: #e2dfd6;
+    --text2: #8a8880;
+    --text3: #4a4840;
+    --accent: #b8e832;
+    --accent2: #32e8a0;
+    --red: #e85032;
+    --blue: #3298e8;
+    --amber: #e8a032;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1.1rem 2.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(12,12,10,0.9);
+    backdrop-filter: blur(16px);
+  }
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links {
+    display: flex; gap: 2rem; list-style: none;
+  }
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+    text-decoration: none;
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text2); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 8rem 2.5rem 4rem;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    top: 50%;
+    left: -2%;
+    transform: translateY(-50%);
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(8rem, 18vw, 22rem);
+    font-weight: 300;
+    color: rgba(255,255,255,0.018);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+    letter-spacing: -0.03em;
+    user-select: none;
+  }
+
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 10px;
+    position: relative; z-index: 1;
+  }
+  .hero-tag::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .hero h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 1.05;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    max-width: 900px;
+    position: relative; z-index: 1;
+    margin-bottom: 2rem;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text2);
+    max-width: 520px;
+    line-height: 1.7;
+    position: relative; z-index: 1;
+    margin-bottom: 3rem;
+  }
+
+  .hero-stats {
+    display: flex; gap: 3rem;
+    position: relative; z-index: 1;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+  .stat-item {}
+  .stat-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+    display: block;
+  }
+  .stat-num span { color: var(--accent); }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* SCROLL INDICATOR */
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    right: 2.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    writing-mode: vertical-rl;
+    display: flex; align-items: center; gap: 8px;
+    z-index: 1;
+  }
+  .scroll-hint::after {
+    content: '';
+    width: 1px;
+    height: 40px;
+    background: var(--border2);
+  }
+
+  /* SECTIONS */
+  section { position: relative; z-index: 1; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 3rem 2.5rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .section-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* POSTS */
+  .post-list {}
+
+  .post-item {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 2rem;
+    align-items: start;
+    padding: 2rem 2.5rem;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  .post-item:hover { background: var(--bg2); }
+  .post-item.featured {
+    grid-template-columns: 1fr;
+    padding: 2.5rem 2.5rem;
+    background: var(--bg2);
+  }
+
+  .post-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    padding-top: 4px;
+    white-space: nowrap;
+  }
+
+  .post-body {}
+
+  .post-tags {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    margin-bottom: 0.6rem;
+  }
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    border: 1px solid var(--border2);
+    padding: 1px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+  }
+  .tag.active { color: var(--accent); border-color: rgba(184,232,50,0.3); }
+
+  .post-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.3rem;
+    color: var(--text);
+    font-weight: 300;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+  .post-item.featured .post-title {
+    font-size: 1.8rem;
+  }
+
+  .post-excerpt {
+    font-size: 14px;
+    color: var(--text3);
+    line-height: 1.6;
+  }
+
+  .post-meta {
+    display: flex; gap: 1rem; align-items: center;
+    margin-top: 0.75rem;
+  }
+  .post-tps {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: rgba(184,232,50,0.08);
+    color: var(--accent);
+    border: 1px solid rgba(184,232,50,0.2);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+  .post-read {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  .post-arrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 18px;
+    color: var(--text3);
+    padding-top: 2px;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .post-item:hover .post-arrow {
+    color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  /* COMING SOON POSTS */
+  .post-item.soon {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .post-item.soon:hover { background: transparent; }
+
+  /* ABOUT STRIP */
+  .about-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--border);
+  }
+  .about-left {
+    padding: 3rem 2.5rem;
+    border-right: 1px solid var(--border);
+  }
+  .about-right {
+    padding: 3rem 2.5rem;
+  }
+  .about-heading {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: var(--text);
+    margin-bottom: 1rem;
+    line-height: 1.3;
+  }
+  .about-body {
+    font-size: 14px;
+    color: var(--text3);
+    line-height: 1.7;
+    margin-bottom: 1rem;
+  }
+
+  /* STACK */
+  .stack-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .stack-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .stack-list li::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* HARDWARE MINI */
+  .hw-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+  .hw-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+  .hw-row:last-child { border-bottom: none; }
+  .hw-key { color: var(--text3); }
+  .hw-val { color: var(--text2); }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+  }
+  footer a { color: var(--text3); text-decoration: none; }
+  footer a:hover { color: var(--text2); }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .hero { padding: 6rem 1.5rem 3rem; }
+    .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+    .section-header { padding: 2rem 1.5rem 1rem; }
+    .post-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.5rem; }
+    .post-item.featured { padding: 1.5rem; }
+    .post-date { display: none; }
+    .post-arrow { display: none; }
+    .about-strip { grid-template-columns: 1fr; }
+    .about-left { border-right: none; border-bottom: 1px solid var(--border); padding: 2rem 1.5rem; }
+    .about-right { padding: 2rem 1.5rem; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">compiled<span>.</span>thoughts</a>
+  <ul class="nav-links">
+    <li><a href="#posts">Posts</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="https://github.com" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg-text">compiled</div>
+
+  <div class="hero-tag">compiledthoughts.dev</div>
+
+  <h1>Research notes on running<br><em>frontier AI</em> locally.</h1>
+
+  <p class="hero-desc">
+    Experiments in local LLM inference on consumer NVIDIA hardware. MoE optimization, memory hierarchy tuning, and the engineering path to private AI that doesn't cost a subscription.
+  </p>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <span class="stat-num">40<span>.4</span></span>
+      <span class="stat-label">tokens/sec · 35B model</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">2<span>.2×</span></span>
+      <span class="stat-label">over Ollama default</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">0<span>₹</span></span>
+      <span class="stat-label">cloud cost · fully local</span>
+    </div>
+  </div>
+
+  <div class="scroll-hint">scroll</div>
+</div>
+
+<!-- POSTS -->
+<section id="posts">
+  <div class="section-header">
+    <span class="section-title">Research Posts</span>
+    <span class="section-count">1 published · 3 upcoming</span>
+  </div>
+
+  <!-- Featured post -->
+  <a class="post-item featured" href="anantamatrix_blog_01.html">
+    <div class="post-tags">
+      <span class="tag active">Experiment 01</span>
+      <span class="tag">MoE</span>
+      <span class="tag">llama.cpp</span>
+      <span class="tag">RTX 5060 Ti</span>
+    </div>
+    <div class="post-title">Running Qwen3.6 35B at 40 TPS on Consumer Hardware — What Ollama Doesn't Tell You</div>
+    <p class="post-excerpt">Ollama leaves 2.2× performance on the table for MoE models. A deep dive into the memory bandwidth hierarchy — VRAM, DDR5, shared memory — and why GPU utilization % is a completely misleading metric for inference speed.</p>
+    <div class="post-meta">
+      <span class="post-tps">40.4 t/s achieved</span>
+      <span class="post-read">May 9, 2026 · 8 min read</span>
+    </div>
+  </a>
+
+  <!-- Upcoming post 2 -->
+  <div class="post-item soon">
+    <div class="post-date">— upcoming —</div>
+    <div class="post-body">
+      <div class="post-tags">
+        <span class="tag">Experiment 02</span>
+        <span class="tag">TurboQuant</span>
+        <span class="tag">MTP</span>
+        <span class="tag">Long Context</span>
+      </div>
+      <div class="post-title">Long Context at Speed: TurboQuant KV + MTP on Qwen3.6 35B</div>
+      <p class="post-excerpt">Pushing context to 32k–200k tokens without sacrificing TPS. TurboQuant KV cache compression (5–7× reduction) frees VRAM for more expert weights. Multi-Token Prediction speculative decoding targets 80+ TPS.</p>
+    </div>
+    <div class="post-arrow">→</div>
+  </div>
+
+  <!-- Upcoming post 3 -->
+  <div class="post-item soon">
+    <div class="post-date">— upcoming —</div>
+    <div class="post-body">
+      <div class="post-tags">
+        <span class="tag">Experiment 03</span>
+        <span class="tag">80B Model</span>
+        <span class="tag">NVMe</span>
+      </div>
+      <div class="post-title">Scaling to 80B: Qwen3 Coder on 41GB of Fast Memory</div>
+      <p class="post-excerpt">Same active parameter count (3B), double the knowledge (80B total). Can the same -ncmoe tuning methodology deliver 20+ TPS on a model that barely fits in VRAM + RAM? NVMe spillover enters the picture.</p>
+    </div>
+    <div class="post-arrow">→</div>
+  </div>
+
+  <!-- Upcoming post 4 -->
+  <div class="post-item soon">
+    <div class="post-date">— upcoming —</div>
+    <div class="post-body">
+      <div class="post-tags">
+        <span class="tag">Experiment 04</span>
+        <span class="tag">DeepSeek V4 Flash</span>
+        <span class="tag">DFloat11</span>
+      </div>
+      <div class="post-title">The Endgame: DeepSeek V4 Flash at 20 TPS on a 3070 Ti</div>
+      <p class="post-excerpt">284B total / 13B active. 148GB model on 8GB VRAM + 32GB DDR4 + Gen4 NVMe. DFloat11 lossless compression + async expert prefetch + GPU decompression using idle cycles. The success criteria that defines the entire project.</p>
+    </div>
+    <div class="post-arrow">→</div>
+  </div>
+
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-strip">
+    <div class="about-left">
+      <div class="about-heading">What this is</div>
+      <p class="about-body">
+        Compiled Thoughts is a research log. Not a tutorial site. Not a product. Just notes from someone trying to run the largest possible open-weight AI model on hardware anyone can buy.
+      </p>
+      <p class="about-body">
+        The goal: DeepSeek V4 Flash (284B parameters, 13B active) at 20 tokens/second on an RTX 3070 Ti. The RTX 3070 Ti is the most common serious gaming GPU in the world. If it works there, it works for millions of people.
+      </p>
+      <p class="about-body">
+        All experiments are real. All numbers are measured. Nothing is theoretical.
+      </p>
+
+      <ul class="stack-list" style="margin-top:1.5rem">
+        <li>llama.cpp / BeeLLaMA.cpp</li>
+        <li>CUDA 12.8 · Blackwell FP4</li>
+        <li>DFloat11 lossless compression</li>
+        <li>TurboQuant KV cache</li>
+        <li>MTP speculative decoding</li>
+        <li>Custom MoE inference engine (in progress)</li>
+      </ul>
+    </div>
+
+    <div class="about-right">
+      <div class="about-heading">Test hardware</div>
+      <p class="about-body">Every experiment runs on this machine. No cloud. No rented GPU.</p>
+
+      <div class="hw-mini">
+        <div class="hw-row">
+          <span class="hw-key">GPU</span>
+          <span class="hw-val">RTX 5060 Ti · 16GB · 448 GB/s</span>
+        </div>
+        <div class="hw-row">
+          <span class="hw-key">CPU</span>
+          <span class="hw-val">Ryzen 9700X · 8c/16t · AVX2</span>
+        </div>
+        <div class="hw-row">
+          <span class="hw-key">RAM</span>
+          <span class="hw-val">32GB DDR5 · ~96 GB/s</span>
+        </div>
+        <div class="hw-row">
+          <span class="hw-key">PCIe</span>
+          <span class="hw-val">Gen 5 x8 · 32 GB/s</span>
+        </div>
+        <div class="hw-row">
+          <span class="hw-key">NVMe</span>
+          <span class="hw-val">Gen4 · ~7 GB/s · 1TB</span>
+        </div>
+        <div class="hw-row">
+          <span class="hw-key">Fast memory</span>
+          <span class="hw-val">~41GB total</span>
+        </div>
+        <div class="hw-row">
+          <span class="hw-key">OS</span>
+          <span class="hw-val">Windows 11 · WSL2 Ubuntu 24.04</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>compiledthoughts.dev</span>
+  <span>Local AI Infrastructure Research · 2026</span>
+  <span><a href="https://github.com" target="_blank">github</a> · <a href="mailto:hello@compiledthoughts.dev">contact</a></span>
+</footer>
+
+</body>
+</html>

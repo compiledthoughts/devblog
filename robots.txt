@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://compiledthoughts.dev/sitemap.xml

@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Running Qwen3.6 35B at 40 TPS on Consumer Hardware — Compiled Thoughts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0c0c0a;
+    --bg2: #141412;
+    --bg3: #1c1c19;
+    --border: #2a2a24;
+    --text: #e2dfd6;
+    --text2: #8a8880;
+    --text3: #706d65;
+    --accent: #b8e832;
+    --accent2: #32e8a0;
+    --red: #e85032;
+    --blue: #3298e8;
+    --amber: #e8a032;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(12,12,10,0.92);
+    backdrop-filter: blur(12px);
+  }
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+  .nav-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+  }
+
+  /* LAYOUT */
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 8rem 0 4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .series-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .series-tag::before {
+    content: '';
+    display: inline-block;
+    width: 20px; height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.15;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .hero-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+    display: flex; gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .hero-summary {
+    font-size: 1.1rem;
+    color: var(--text2);
+    line-height: 1.7;
+    border-left: 2px solid var(--border);
+    padding-left: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  /* CONTENT */
+  .content { padding: 3rem 0 6rem; }
+
+  h2 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: var(--text);
+    margin: 3.5rem 0 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  h3 {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 2rem 0 0.75rem;
+  }
+  p { margin-bottom: 1.25rem; color: var(--text2); }
+  strong { color: var(--text); font-weight: 500; }
+
+  /* CODE */
+  pre {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #c8c5bc;
+  }
+  code {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--accent2);
+  }
+  pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+  }
+  .comment { color: var(--text3); }
+  .flag { color: var(--accent); }
+  .val { color: var(--accent2); }
+
+  /* HARDWARE SPECS */
+  .hw-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+  }
+  .hw-item {
+    background: var(--bg2);
+    padding: 1rem 1.25rem;
+  }
+  .hw-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .hw-value {
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .hw-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  /* BANDWIDTH TABLE */
+  .bw-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+  }
+  .bw-table th {
+    text-align: left;
+    padding: 0.5rem 1rem;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+  }
+  .bw-table td {
+    padding: 0.6rem 1rem;
+    color: var(--text2);
+    border-bottom: 1px solid rgba(42,42,36,0.5);
+  }
+  .bw-table td:last-child { color: var(--text); }
+  .bw-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border);
+    margin-top: 4px;
+    overflow: hidden;
+  }
+  .bw-fill { height: 100%; border-radius: 2px; }
+
+  /* RESULT CALLOUT */
+  .callout {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin: 1.5rem 0;
+    background: var(--bg2);
+  }
+  .callout.good { border-color: rgba(184,232,50,0.3); background: rgba(184,232,50,0.04); }
+  .callout.bad { border-color: rgba(232,80,50,0.3); background: rgba(232,80,50,0.04); }
+  .callout.info { border-color: rgba(50,152,232,0.3); background: rgba(50,152,232,0.04); }
+  .callout-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+  .callout.good .callout-label { color: var(--accent); }
+  .callout.bad .callout-label { color: var(--red); }
+  .callout.info .callout-label { color: var(--blue); }
+  .callout p { margin: 0; font-size: 15px; }
+
+  /* BIG NUMBER */
+  .big-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0.5rem 0;
+  }
+  .big-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 3rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+  .big-unit {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text3);
+  }
+
+  /* CHART */
+  .chart-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  .chart-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .chart-legend {
+    display: flex; gap: 1.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .chart-legend span {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* INSIGHT BOX */
+  .insight {
+    border-left: 2px solid var(--accent);
+    padding: 1rem 1.5rem;
+    margin: 2rem 0;
+    background: rgba(184,232,50,0.03);
+  }
+  .insight p { margin: 0; color: var(--text); font-size: 15px; line-height: 1.65; }
+
+  /* NEXT POST */
+  .next-post {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    margin-top: 4rem;
+    background: var(--bg2);
+  }
+  .next-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .next-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 1.4rem;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+  .next-desc { font-size: 14px; color: var(--text3); margin: 0; }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+  }
+
+  @media (max-width: 600px) {
+    .hw-grid { grid-template-columns: 1fr; }
+    .hero { padding: 6rem 0 3rem; }
+    h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">compiled<span style="color:var(--accent)">.</span>thoughts</a>
+  <div style="display:flex;align-items:center;gap:1.5rem">
+    <a href="../index.html" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;">Home</a>
+    <a href="../about.html" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;">About</a>
+    <a href="index.html" style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);text-decoration:none;letter-spacing:0.06em;text-transform:uppercase;">Blog</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <div class="series-tag">Experiment 01 — MoE Inference</div>
+    <h1>Running Qwen3.6 35B at <em>40 TPS</em> on Consumer Hardware</h1>
+    <div class="hero-meta">
+      <span>May 9, 2026</span>
+      <span>RTX 5060 Ti · 32GB DDR5</span>
+      <span>llama.cpp b9091</span>
+    </div>
+    <div class="hero-summary">
+      Ollama leaves 2.2× performance on the table for MoE models. This post documents exactly why — and how we recovered it using five flags, one tuning parameter, and a key insight about memory bandwidth hierarchy.
+    </div>
+  </div>
+
+  <div class="content">
+
+    <h2>Hardware</h2>
+    <p>Everything in this experiment runs on a single consumer workstation. No cloud. No rented GPU. The specs matter because the entire optimization strategy is built around its memory hierarchy.</p>
+
+    <div class="hw-grid">
+      <div class="hw-item">
+        <div class="hw-label">GPU</div>
+        <div class="hw-value">RTX 5060 Ti</div>
+        <div class="hw-sub">16GB GDDR7 · 448 GB/s · Blackwell</div>
+      </div>
+      <div class="hw-item">
+        <div class="hw-label">System RAM</div>
+        <div class="hw-value">32GB DDR5</div>
+        <div class="hw-sub">~96 GB/s bandwidth</div>
+      </div>
+      <div class="hw-item">
+        <div class="hw-label">CPU</div>
+        <div class="hw-value">Ryzen 9700X</div>
+        <div class="hw-sub">8 cores / 16 threads · AVX2</div>
+      </div>
+      <div class="hw-item">
+        <div class="hw-label">PCIe Bus</div>
+        <div class="hw-value">PCIe 5.0 x8</div>
+        <div class="hw-sub">~32 GB/s GPU↔RAM</div>
+      </div>
+      <div class="hw-item">
+        <div class="hw-label">NVMe SSD</div>
+        <div class="hw-value">Gen4 NVMe</div>
+        <div class="hw-sub">~7 GB/s sequential read</div>
+      </div>
+      <div class="hw-item">
+        <div class="hw-label">Total Fast Memory</div>
+        <div class="hw-value">~41 GB</div>
+        <div class="hw-sub">VRAM 16GB + RAM 25GB usable</div>
+      </div>
+    </div>
+
+    <h3>The memory hierarchy</h3>
+    <p>The key to understanding everything that follows is this bandwidth table. These numbers determine every optimization decision.</p>
+
+    <table class="bw-table">
+      <thead>
+        <tr><th>Tier</th><th>Bandwidth</th><th>Relative speed</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dedicated VRAM</td>
+          <td>448 GB/s</td>
+          <td>
+            <div class="bw-bar"><div class="bw-fill" style="width:100%;background:#b8e832"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td>DDR5 RAM (CPU)</td>
+          <td>96 GB/s</td>
+          <td>
+            <div class="bw-bar"><div class="bw-fill" style="width:21%;background:#32e8a0"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td>Shared GPU memory (PCIe)</td>
+          <td>32 GB/s</td>
+          <td>
+            <div class="bw-bar"><div class="bw-fill" style="width:7%;background:#e8a032"></div></div>
+          </td>
+        </tr>
+        <tr>
+          <td>NVMe SSD</td>
+          <td>7 GB/s</td>
+          <td>
+            <div class="bw-bar"><div class="bw-fill" style="width:1.5%;background:#e85032"></div></div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>The Model</h2>
+    <p><strong>Qwen3.6 35B-A3B</strong> is a Mixture-of-Experts (MoE) model. The numbers mean: 35 billion total parameters, 3 billion active per token. During inference, a router selects which experts (sub-networks) to activate. The rest sit idle in memory.</p>
+    <p>This is the property that makes consumer hardware viable: you get 35B of knowledge at 3B inference cost. A dense 35B model would be far slower. The tradeoff is memory management complexity — which is exactly what this experiment is about.</p>
+    <p>We used the <strong>IQ4_XS GGUF</strong> variant (~20GB). It fits in 16GB VRAM + RAM with no NVMe spillover.</p>
+
+    <h2>Baseline: Ollama Default</h2>
+    <p>The starting point: run the model with Ollama's default configuration and measure tokens per second.</p>
+
+    <pre><code>ollama run qwen3.6:35b-a3b
+<span class="comment"># Prompt: "Explain how transformers work, step by step."</span>
+<span class="comment"># Output: 500 tokens</span></code></pre>
+
+    <div class="callout bad">
+      <div class="callout-label">Baseline Result</div>
+      <div class="big-stat">
+        <span class="big-num" style="color:var(--red)">18.15</span>
+        <span class="big-unit">tokens/sec</span>
+      </div>
+      <p style="margin-top:0.5rem">CPU/GPU split: 48% CPU / 52% GPU. GPU utilization: 17%.</p>
+    </div>
+
+    <p>GPU at 17% utilization. Nearly half the model running on slow CPU paths. Ollama doesn't understand MoE architecture — it naively splits layers without knowing which should go where.</p>
+
+    <h2>The MoE Problem</h2>
+    <p>A MoE model has two distinct computation types per layer:</p>
+    <p><strong>Attention layers</strong> — dense, always active every token. Small, fast, GPU loves them.</p>
+    <p><strong>Expert FFN layers</strong> — sparse. Only 3B of 35B activates per token. Large, but most of it sits idle.</p>
+    <p>Ollama doesn't make this distinction. It splits layers generically. The result: expert weights land in VRAM, fill it up, overflow into shared memory (DDR5 accessed via PCIe at 32 GB/s), and GPU throughput collapses.</p>
+
+    <div class="insight">
+      <p>Shared GPU memory is DDR5 wearing a GPU mask. It looks like VRAM but runs at PCIe speed — 32 GB/s instead of 448 GB/s. A 14× bandwidth penalty on every expert weight access that hits it.</p>
+    </div>
+
+    <h2>The Fix: llama.cpp with MoE-aware flags</h2>
+    <p>llama.cpp exposes a flag that Ollama never uses: <code>-ncmoe N</code> — keep the first N MoE layers' expert weights on CPU RAM instead of GPU.</p>
+    <p>The insight: <strong>CPU RAM at 96 GB/s beats shared GPU memory at 32 GB/s by 3×.</strong> Keeping experts in RAM is faster than letting them spill into shared VRAM.</p>
+
+    <h3>Optimal flags</h3>
+    <pre><code>./llama-server \
+  -m Qwen3.6-35B-A3B-IQ4_XS.gguf \
+  <span class="flag">-ngl</span> <span class="val">999</span>          <span class="comment"># all layers → GPU</span>
+  <span class="flag">-ncmoe</span> <span class="val">11</span>        <span class="comment"># 11/41 MoE layers → CPU RAM (sweet spot)</span>
+  <span class="flag">--flash-attn</span> on  <span class="comment"># memory-efficient attention kernel</span>
+  <span class="flag">-ctk</span> <span class="val">q8_0</span>        <span class="comment"># KV cache keys → 8-bit</span>
+  <span class="flag">-ctv</span> <span class="val">q8_0</span>        <span class="comment"># KV cache values → 8-bit</span>
+  <span class="flag">--no-mmap</span>        <span class="comment"># load fully into RAM upfront</span>
+  <span class="flag">--mlock</span>          <span class="comment"># pin model in RAM, prevent OS swap</span>
+  <span class="flag">-t</span> <span class="val">9</span> <span class="flag">-tb</span> <span class="val">16</span>      <span class="comment"># CPU threads: 9 gen, 16 batch</span>
+  <span class="flag">--prio</span> <span class="val">2</span>          <span class="comment"># high process priority</span>
+  <span class="flag">--poll</span> <span class="val">100</span>        <span class="comment"># reduce CPU↔GPU handoff latency</span>
+  <span class="flag">--port</span> <span class="val">8080</span></code></pre>
+
+    <h2>Tuning the -ncmoe Parameter</h2>
+    <p>The model has <strong>41 layers total</strong>. We swept <code>-ncmoe</code> values to find the optimal split. The result shows two distinct cliffs — one from too many experts on CPU, one from VRAM overflow into shared memory.</p>
+
+    <div class="chart-wrap">
+      <div class="chart-title">-ncmoe sweep — TPS · GPU% · Shared VRAM</div>
+      <div class="chart-legend">
+        <span><span class="swatch" style="background:#b8e832"></span>Generation TPS</span>
+        <span><span class="swatch" style="background:#7f77dd"></span>GPU utilization %</span>
+        <span><span class="swatch" style="background:#e85032"></span>Shared VRAM GB</span>
+      </div>
+      <div style="position:relative;height:280px">
+        <canvas id="chart1"></canvas>
+      </div>
+    </div>
+
+    <div class="callout good">
+      <div class="callout-label">Sweet Spot — -ncmoe 11</div>
+      <div class="big-stat">
+        <span class="big-num" style="color:var(--accent)">40.4</span>
+        <span class="big-unit">tokens/sec</span>
+      </div>
+      <p style="margin-top:0.5rem">GPU 33% · Shared VRAM 4.7GB · 11/41 layers on CPU (27%)</p>
+    </div>
+
+    <h3>Why the two cliffs exist</h3>
+    <p><strong>Left cliff (ncmoe 20):</strong> Too many experts on CPU. CPU matrix multiply is ~500× slower than GPU. GPU finishes its layers and sits idle waiting for CPU — hence 20% GPU utilization and only 26.8 TPS.</p>
+    <p><strong>Right cliff (ncmoe 5 → 10):</strong> Too many experts pushed to GPU. VRAM fills up and overflows into shared memory. GPU now reads some weights at 32 GB/s instead of 448 GB/s — a 14× penalty. GPU appears "busy" at 86% but TPS collapses to 18.</p>
+    <p><strong>The sweet spot (ncmoe 11):</strong> GPU and CPU finish their respective work at roughly the same time. No waiting. No overflow. Neither is the bottleneck.</p>
+
+    <div class="insight">
+      <p>High GPU% ≠ fast inference. At 86% GPU utilization we got 18 TPS. At 33% GPU utilization we got 40 TPS. The metric that matters is TPS, not utilization.</p>
+    </div>
+
+    <h2>Results</h2>
+
+    <div class="chart-wrap">
+      <div class="chart-title">Baseline vs Optimized</div>
+      <div style="position:relative;height:200px">
+        <canvas id="chart2"></canvas>
+      </div>
+    </div>
+
+    <table class="bw-table">
+      <thead>
+        <tr><th>Config</th><th>TPS</th><th>GPU%</th><th>Shared VRAM</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Ollama default</td><td>18.15</td><td>17%</td><td>—</td></tr>
+        <tr><td>llama.cpp -ncmoe 20</td><td>26.8</td><td>20%</td><td>4.0GB</td></tr>
+        <tr><td>llama.cpp -ncmoe 15</td><td>31.9</td><td>26%</td><td>6.5GB</td></tr>
+        <tr><td>llama.cpp -ncmoe 12</td><td>36.3</td><td>31%</td><td>5.2GB</td></tr>
+        <tr style="background:rgba(184,232,50,0.04)"><td><strong>llama.cpp -ncmoe 11 ★</strong></td><td><strong>40.4</strong></td><td><strong>33%</strong></td><td><strong>4.7GB</strong></td></tr>
+        <tr><td>llama.cpp -ncmoe 10</td><td>27.3</td><td>60%</td><td>4.2GB</td></tr>
+        <tr><td>llama.cpp -ncmoe 5</td><td>18.1</td><td>86%</td><td>8.7GB</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout good">
+      <div class="callout-label">Final Result</div>
+      <p><strong>40.4 TPS — 2.2× improvement over Ollama</strong> with zero hardware changes. Five flags and one tuning parameter recovered performance that Ollama was leaving on the table.</p>
+    </div>
+
+    <h2>What's Next</h2>
+    <p>This experiment established the baseline and the optimization methodology. Context window was kept small for benchmarking. The next experiment attacks the real constraint: <strong>long context.</strong></p>
+    <p>At 32k context, KV cache grows significantly and eats into the VRAM budget we're currently using for experts. TurboQuant KV cache compression (5–7× reduction) is the tool for this. The goal is to run at 32k–200k context without sacrificing TPS.</p>
+    <p>Additionally: the MTP (Multi-Token Prediction) variant of this model has a built-in speculative decoding head. BeeLLaMA.cpp (a performance-focused llama.cpp fork) supports it natively — early tests suggest a 2–3× TPS multiplier. That's the path to 80+ TPS on this hardware.</p>
+
+    <div class="next-post">
+      <div class="next-label">Next — Experiment 02</div>
+      <div class="next-title">Long Context at Speed: TurboQuant KV + MTP on Qwen3.6 35B</div>
+      <p class="next-desc">Pushing context to 32k–200k tokens without sacrificing generation speed. TurboQuant KV cache compression + Multi-Token Prediction speculative decoding. Target: 80+ TPS at 32k context.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  compiledthoughts.dev &middot; Local AI Infrastructure Research &middot; May 2026
+</footer>
+
+<script>
+// Chart 1: ncmoe sweep
+const labels = ['-ncmoe 20','-ncmoe 15','-ncmoe 12','-ncmoe 11 ★','-ncmoe 10','-ncmoe 5'];
+const tps =  [26.8, 31.9, 36.3, 40.4, 27.3, 18.1];
+const gpu =  [20, 26, 31, 33, 60, 86];
+const vram = [4.0, 6.5, 5.2, 4.7, 4.2, 8.7];
+
+const gridColor = 'rgba(42,42,36,0.8)';
+const tickColor = '#4a4840';
+
+new Chart(document.getElementById('chart1'), {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: 'TPS',
+        data: tps,
+        borderColor: '#b8e832',
+        backgroundColor: 'rgba(184,232,50,0.06)',
+        pointBackgroundColor: tps.map((v,i) => i===3 ? '#b8e832' : 'rgba(184,232,50,0.3)'),
+        pointRadius: tps.map((v,i) => i===3 ? 7 : 4),
+        pointStyle: tps.map((v,i) => i===3 ? 'star' : 'circle'),
+        borderWidth: 2, fill: true, tension: 0.3, yAxisID: 'y'
+      },
+      {
+        label: 'GPU %',
+        data: gpu,
+        borderColor: '#7f77dd',
+        backgroundColor: 'transparent',
+        pointBackgroundColor: 'rgba(127,119,221,0.4)',
+        pointRadius: 4, borderDash: [4,3], borderWidth: 1.5, tension: 0.3, yAxisID: 'y2'
+      },
+      {
+        label: 'Shared VRAM GB',
+        data: vram,
+        borderColor: '#e85032',
+        backgroundColor: 'rgba(232,80,50,0.04)',
+        pointBackgroundColor: 'rgba(232,80,50,0.4)',
+        pointRadius: 4, borderWidth: 1.5, fill: true, tension: 0.3, yAxisID: 'y3'
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { color: tickColor, font: { size: 11, family: 'DM Mono' } }, grid: { color: gridColor } },
+      y: { position: 'left', title: { display: true, text: 't/s', color: '#b8e832', font: { size: 11 } }, ticks: { color: tickColor, font: { size: 11 } }, grid: { color: gridColor }, min: 0, max: 50 },
+      y2: { position: 'right', title: { display: true, text: 'GPU%', color: '#7f77dd', font: { size: 11 } }, ticks: { color: tickColor, callback: v => v+'%', font: { size: 11 } }, grid: { display: false }, min: 0, max: 100 },
+      y3: { position: 'right', title: { display: true, text: 'shared GB', color: '#e85032', font: { size: 11 } }, ticks: { color: tickColor, callback: v => v+'GB', font: { size: 11 } }, grid: { display: false }, min: 0, max: 12 }
+    }
+  }
+});
+
+// Chart 2: comparison bar
+new Chart(document.getElementById('chart2'), {
+  type: 'bar',
+  data: {
+    labels: ['Ollama Default', 'llama.cpp -ncmoe 11'],
+    datasets: [{
+      data: [18.15, 40.4],
+      backgroundColor: ['rgba(232,80,50,0.3)', 'rgba(184,232,50,0.3)'],
+      borderColor: ['#e85032', '#b8e832'],
+      borderWidth: 1,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    indexAxis: 'y',
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.x} tokens/sec` } }
+    },
+    scales: {
+      x: {
+        ticks: { color: tickColor, font: { size: 11 }, callback: v => v+' t/s' },
+        grid: { color: gridColor },
+        max: 50
+      },
+      y: { ticks: { color: '#8a8880', font: { size: 13, family: 'DM Sans' } }, grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

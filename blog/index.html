@@ -5,20 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blog &mdash; Compiled Thoughts</title>
   <meta name="description" content="Latest articles from Compiled Thoughts.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../assets/style.css">
   <script src="../assets/theme.js"></script>
   <script src="../assets/search.js" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a class="logo" href="../index.html"><img src="../assets/img/logov5.png" alt="Compiled Thoughts" width="80" height="80"></a>
-    <nav>
+  <nav class="site-nav">
+    <a class="nav-logo" href="../index.html">
+      <img src="../assets/img/logov5.png" alt="Compiled Thoughts" width="32" height="32">
+      <span>COMPILED THOUGHTS</span>
+    </a>
+    <div class="nav-links">
       <a href="../index.html">Home</a>
       <a href="../about.html">About</a>
       <a href="index.html" class="active">Blog</a>
-      <button id="themeBtn" class="theme-btn">Dark</button>
-    </nav>
-  </header>
+
+    </div>
+  </nav>
 
   <main>
     <div class="container">
@@ -29,6 +34,14 @@
       </div>
 
       <div id="postList">
+
+        <div class="post-item" data-search="qwen3 35b moe llama.cpp ncmoe tps inference optimization rtx 5060 ti consumer hardware">
+          <h2><a href="anantamatrix_blog_01.html">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</a></h2>
+          <p>Ollama leaves 2.2&times; performance on the table for MoE models &mdash; here's how to recover it.</p>
+          <p class="post-meta">9 May 2026</p>
+        </div>
+
+        <hr>
 
         <div class="post-item" data-search="what are llms large language models ai artificial intelligence deep learning transformer">
           <h2><a href="what-are-llms.html">What Are LLMs (Large Language Models)?</a></h2>
