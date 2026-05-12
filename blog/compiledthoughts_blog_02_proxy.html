@@ -110,6 +110,22 @@
 
     <p>The solution: a thin proxy that sits in between.</p>
 
+    <h2>Research Is Never Static</h2>
+
+    <p>By the time this was written, <a href="https://github.com/ggml-org/llama.cpp/blob/master/docs/function-calling.md" target="_blank">llama-server added native Claude API support</a> via the <code>--jinja</code> flag. It can speak Anthropic's Messages API out of the box — no proxy required for Claude Code.</p>
+
+    <p>This is the nature of research: your artifact captures a point in time. Literature review exists precisely because the field moves faster than publication. The value isn't in claiming first; it's in the experiment, the real data, the failures, and the architecture you build on top.</p>
+
+    <p>This proxy's purpose has shifted. The Anthropic→OpenAI translation is now redundant. What remains is what the proxy actually does better than scraping Prometheus metrics by hand:</p>
+
+    <ul style="color:var(--text2);margin:1rem 0 1rem 1.5rem;line-height:2">
+      <li>Accumulates lifetime token totals across llama-server restarts (counter-resilient)</li>
+      <li>Serves a live dashboard — no third-party monitoring stack required</li>
+      <li>Provides a single forwarding layer ready for federated backends: route to different models based on context size, cost, or latency</li>
+    </ul>
+
+    <p>The proxy isn't the endpoint. It's infrastructure for the next experiments.</p>
+
     <h2>The Architecture</h2>
 
     <div class="arch-box">
