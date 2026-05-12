@@ -174,8 +174,16 @@ python proxy.py</code></pre>
 
     <h3>Claude Code</h3>
 
+    <h3>bash / zsh / macOS</h3>
+
     <pre><code>export ANTHROPIC_BASE_URL=http://localhost:9090
 export ANTHROPIC_API_KEY=localkey
+claude</code></pre>
+
+    <h3>PowerShell / Windows</h3>
+
+    <pre><code>$env:ANTHROPIC_BASE_URL="http://localhost:9090"
+$env:ANTHROPIC_API_KEY="localkey"
 claude</code></pre>
 
     <p>That's it. Claude Code sends Anthropic Messages API requests. The proxy translates them to OpenAI format, calls llama-server, translates the response back — including full SSE streaming.</p>
