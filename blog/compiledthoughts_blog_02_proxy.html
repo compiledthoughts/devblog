@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Using Claude Code and Cline with a Local LLM — Compiled Thoughts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital,wght@0,9..144,300;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0c0c0a; --bg2: #141412; --bg3: #1c1c19;
+    --border: #252520; --border2: #2e2e28;
+    --text: #e2dfd6; --text2: #8a8880; --text3: #4a4840;
+    --accent: #b8e832; --accent2: #32e8a0; --red: #e85032; --blue: #3298e8;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 17px; line-height: 1.75; font-weight: 300; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(12,12,10,0.92); backdrop-filter: blur(16px); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none; }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); text-decoration: none; }
+  .nav-links a:hover { color: var(--text2); }
+  .container { max-width: 760px; margin: 0 auto; padding: 0 2rem; }
+  .hero { padding: 8rem 0 3rem; border-bottom: 1px solid var(--border); }
+  .series-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  .series-tag::before { content: ''; width: 20px; height: 1px; background: var(--accent); }
+  h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; font-weight: 300; margin-bottom: 1.5rem; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .hero-meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; }
+  .github-badge { display: inline-flex; align-items: center; gap: 6px; background: #24292e; color: #e2dfd6 !important; font-family: 'DM Mono', monospace; font-size: 11px; padding: 5px 11px; border-radius: 5px; text-decoration: none !important; border: 1px solid rgba(255,255,255,0.12); transition: background 0.15s, border-color 0.15s; margin-left: auto; }
+  .github-badge:hover { background: #2f363d; border-color: rgba(255,255,255,0.22); }
+  .github-badge svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+  .hero-summary { font-size: 1.05rem; color: var(--text2); border-left: 2px solid var(--border); padding-left: 1.5rem; margin-top: 2rem; line-height: 1.7; }
+  .content { padding: 3rem 0 6rem; }
+  h2 { font-family: 'Instrument Serif', serif; font-size: 1.7rem; font-weight: 300; margin: 3.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  h3 { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; margin: 2rem 0 0.75rem; }
+  p { margin-bottom: 1.25rem; color: var(--text2); }
+  strong { color: var(--text); font-weight: 500; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.7; color: #c8c5bc; }
+  code { font-family: 'DM Mono', monospace; font-size: 13px; background: var(--bg3); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; color: var(--accent2); }
+  pre code { background: none; border: none; padding: 0; color: inherit; }
+  .callout { border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; background: var(--bg2); }
+  .callout.good { border-color: rgba(184,232,50,0.3); background: rgba(184,232,50,0.04); }
+  .callout.info { border-color: rgba(50,152,232,0.3); background: rgba(50,152,232,0.04); }
+  .callout-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .callout.good .callout-label { color: var(--accent); }
+  .callout.info .callout-label { color: var(--blue); }
+  .callout p { margin: 0; font-size: 15px; }
+  .insight { border-left: 2px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: rgba(184,232,50,0.03); }
+  .insight p { margin: 0; color: var(--text); font-size: 15px; line-height: 1.65; }
+  .arch-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text2); line-height: 1.8; }
+  .arch-box .highlight { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; }
+  th { text-align: left; padding: 0.5rem 1rem; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+  td { padding: 0.6rem 1rem; color: var(--text2); border-bottom: 1px solid rgba(42,42,36,0.5); }
+  .next-post { border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-top: 4rem; background: var(--bg2); }
+  .next-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
+  .next-title { font-family: 'Instrument Serif', serif; font-size: 1.4rem; font-weight: 300; color: var(--text); margin-bottom: 0.75rem; }
+  .next-desc { font-size: 14px; color: var(--text3); margin: 0; }
+  footer { border-top: 1px solid var(--border); padding: 2rem 2.5rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  @media (max-width: 600px) { .hero { padding: 6rem 0 2rem; } h1 { font-size: 1.8rem; } .hero-meta { flex-direction: column; gap: 0.5rem; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">compiled<span>.</span>thoughts</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Posts</a></li>
+    <li><a href="https://github.com/compiledthoughts" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <div class="series-tag">Experiment 02 — Local Tooling</div>
+    <h1>Using <em>Claude Code</em> and Cline with a Local LLM</h1>
+    <div class="hero-meta">
+      <span>May 12, 2026</span>
+      <span>Qwen3.6 35B · RTX 5060 Ti</span>
+      <a href="https://github.com/compiledthoughts/llama-cpp-claude-code-proxy" target="_blank" class="github-badge">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        llama-cpp-claude-code-proxy
+      </a>
+    </div>
+    <div class="hero-summary">
+      Claude Code speaks Anthropic's API. llama-server speaks OpenAI's API. A 600-line proxy bridges the two — and adds lifetime metrics tracking. Here's how it works and how to set it up.
+    </div>
+  </div>
+
+  <div class="content">
+
+    <h2>The Problem</h2>
+
+    <p>After getting <a href="anantamatrix_blog_01.html">Qwen3.6 35B running at 40 TPS locally</a>, the next goal was obvious: use it as the backend for real coding tools. Claude Code, Cline, GitHub Copilot — all the tools I was already using daily.</p>
+
+    <p>The problem: these tools speak different API formats.</p>
+
+    <div class="arch-box">
+      <span class="highlight">Claude Code</span>  →  Anthropic Messages API  (POST /v1/messages)<br>
+      <span class="highlight">Cline / Cursor</span>  →  OpenAI Chat API  (POST /v1/chat/completions)<br>
+      <span class="highlight">llama-server</span>  →  OpenAI Chat API  (POST /v1/chat/completions)
+    </div>
+
+    <p>Cline works out of the box — just point it at <code>http://localhost:8080/v1</code>. Claude Code doesn't. It sends Anthropic-format requests that llama-server can't understand.</p>
+
+    <p>The solution: a thin proxy that sits in between.</p>
+
+    <h2>The Architecture</h2>
+
+    <div class="arch-box">
+Claude Code / Cline / Cursor / Copilot / any OpenAI SDK<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<span class="highlight">llama-cpp-claude-code-proxy  (port 9090)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── Claude mode: translates Anthropic → OpenAI<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── OpenAI mode: transparent passthrough<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── polls /metrics every 10s<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── persists lifetime totals to metrics.json<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── serves dashboard at /dashboard<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼<br>
+<span class="highlight">llama-server  (port 8080)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── Qwen3.6 35B at 57 TPS
+    </div>
+
+    <p>Two modes. One proxy. Both tools work.</p>
+
+    <h2>Setup</h2>
+
+    <h3>Step 1 — Start llama-server</h3>
+
+    <p>The <code>--metrics</code> flag is required — the proxy polls this endpoint to collect TPS and token counts.</p>
+
+    <pre><code>./llama-server \
+  -m Qwen_Qwen3.6-35B-A3B-IQ4_XS.gguf \
+  -ngl 999 -ncmoe 11 \
+  --flash-attn on \
+  -ctk q8_0 -ctv q8_0 \
+  --no-mmap --mlock \
+  -t 9 -tb 16 -c 32768 \
+  --host 0.0.0.0 --port 8080 \
+  --metrics</code></pre>
+
+    <h3>Step 2 — Start the proxy</h3>
+
+    <pre><code>git clone https://github.com/compiledthoughts/llama-cpp-claude-code-proxy
+cd llama-cpp-claude-code-proxy
+pip install -r requirements.txt
+
+# For Claude Code
+python proxy.py --mode claude
+
+# For Cline / Cursor / Continue.dev
+python proxy.py</code></pre>
+
+    <p>Startup confirms everything is connected:</p>
+
+    <pre><code>==========================================================
+  llama-cpp-claude-code-proxy
+==========================================================
+  Mode         : claude
+  Proxy URL    : http://localhost:9090
+  llama-server : http://localhost:8080
+  Dashboard    : http://localhost:9090/dashboard
+==========================================================
+[proxy] llama-server ONLINE (http://localhost:8080)</code></pre>
+
+    <h2>Connecting Your Tools</h2>
+
+    <h3>Claude Code</h3>
+
+    <pre><code>export ANTHROPIC_BASE_URL=http://localhost:9090
+export ANTHROPIC_API_KEY=localkey
+claude</code></pre>
+
+    <p>That's it. Claude Code sends Anthropic Messages API requests. The proxy translates them to OpenAI format, calls llama-server, translates the response back — including full SSE streaming.</p>
+
+    <h3>Cline (VS Code)</h3>
+
+    <p>Open Cline settings:</p>
+    <ul style="color:var(--text2);margin:1rem 0 1rem 1.5rem;line-height:2">
+      <li>Provider → <strong style="color:var(--text)">OpenAI Compatible</strong></li>
+      <li>Base URL → <strong style="color:var(--text)">http://localhost:9090/v1</strong></li>
+      <li>API Key → <strong style="color:var(--text)">localkey</strong></li>
+    </ul>
+
+
+
+    <h2>The Claude Mode Translation</h2>
+
+    <p>The interesting part of the proxy is the Anthropic → OpenAI translation. Claude Code sends requests like this:</p>
+
+    <pre><code>POST /v1/messages
+{
+  "model": "claude-sonnet-4-5",
+  "system": "You are a helpful assistant",
+  "messages": [{"role": "user", "content": "Hello"}],
+  "stream": true
+}</code></pre>
+
+    <p>The proxy converts this to OpenAI format, calls llama-server, then wraps the response back into Anthropic's SSE event format:</p>
+
+    <pre><code>event: message_start
+event: content_block_start
+event: content_block_delta   ← token by token
+event: content_block_stop
+event: message_delta
+event: message_stop</code></pre>
+
+    <p>Claude Code never knows it's talking to Qwen3.6. It just sees a compliant Anthropic API.</p>
+
+    <h2>Lifetime Metrics</h2>
+
+    <p>The proxy polls <code>http://localhost:8080/metrics</code> every 10 seconds and accumulates lifetime totals in <code>metrics.json</code>. This survives llama-server restarts — counter resets are detected automatically.</p>
+
+    <div class="callout good">
+      <div class="callout-label">After 3 days of use</div>
+      <p>187.2K prompt tokens · 10K generated tokens · 57 requests tracked since May 12, 2026</p>
+    </div>
+
+    <p>The dashboard at <code>http://localhost:9090/dashboard</code> reads from <code>metrics.json</code> and auto-refreshes every 5 seconds. Shows current TPS, context usage, KV cache ratio, and token history charts.</p>
+
+    <h2>Real Results</h2>
+
+    <table>
+      <thead><tr><th>Tool</th><th>Mode</th><th>Context</th><th>TPS</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Claude Code</td><td>claude</td><td>32k</td><td>57</td><td>✅ Tested</td></tr>
+        <tr><td>Cline (VS Code)</td><td>openai</td><td>32k</td><td>57</td><td>✅ Tested</td></tr>
+        <tr><td>Cline (VS Code)</td><td>openai</td><td>64k actual work</td><td>27</td><td>✅ Tested</td></tr>
+      </tbody>
+    </table>
+
+    <p>Both were tested independently — one at a time. The 27 TPS figure at 64k context is from real coding use, not a synthetic benchmark. Cline accumulates context across a session as it reads files, runs commands, and tracks conversation history.</p>
+
+    <div class="insight">
+      <p>Context size is the real TPS variable. 32k → 57 TPS. 64k actual work → 27 TPS. The KV cache competes with expert weights for VRAM. TurboQuant KV compression is the next step — Experiment 04.</p>
+    </div>
+
+    <h2>After 2 Hours of Real Use</h2>
+
+    <div class="callout good">
+      <div class="callout-label">Lifetime stats — 2 hours of actual coding</div>
+      <p>244.2K prompt tokens · 19.6K generated tokens · 69 requests · ~27 TPS average</p>
+    </div>
+
+    <p>The prompt:generated ratio is 12:1. Cline sends large context (files, history, tool results) and receives focused responses. This is normal for agentic coding tools — they read a lot, write precisely.</p>
+
+    <h2>Source</h2>
+
+    <p><a href="https://github.com/compiledthoughts/llama-cpp-claude-code-proxy" target="_blank">github.com/compiledthoughts/llama-cpp-claude-code-proxy</a> — MIT license. Single file. ~600 lines.</p>
+
+    <div class="next-post">
+      <div class="next-label">Next — Experiment 03</div>
+      <div class="next-title">Why llama-server is 57 TPS but llama-cli is only 36 TPS — LM Cache and KV Checkpointing</div>
+      <p class="next-desc">The same model, same flags, 1.6× faster in server mode. The answer is KV cache checkpointing — llama-server reuses 97% of context tokens across requests. Here's how it works and why it matters for coding assistants specifically.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>compiledthoughts.dev · Local AI Infrastructure Research · 2026</footer>
+
+</body>
+</html>
