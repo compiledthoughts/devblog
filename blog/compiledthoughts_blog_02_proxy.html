@@ -150,7 +150,7 @@ Claude Code / Cline / Cursor / Copilot / any OpenAI SDK<br>
 
     <h3>Step 1 — Start llama-server</h3>
 
-    <p>The <code>--metrics</code> flag is required — the proxy polls this endpoint to collect TPS and token counts.</p>
+    <p>The <code>--metrics</code> flag is required — the proxy polls this endpoint to collect TPS and token counts. Add <code>--jinja</code> if you want llama-server to speak Claude's API natively (function calling, tool use, Anthropic format).</p>
 
     <pre><code>./llama-server \
   -m Qwen_Qwen3.6-35B-A3B-IQ4_XS.gguf \
@@ -160,7 +160,8 @@ Claude Code / Cline / Cursor / Copilot / any OpenAI SDK<br>
   --no-mmap --mlock \
   -t 9 -tb 16 -c 32768 \
   --host 0.0.0.0 --port 8080 \
-  --metrics</code></pre>
+  --metrics \
+  --jinja</code></pre>
 
     <h3>Step 2 — Start the proxy</h3>
 
