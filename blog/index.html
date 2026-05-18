@@ -10,6 +10,146 @@
   <link rel="stylesheet" href="../assets/style.css">
   <script src="../assets/theme.js"></script>
   <script src="../assets/search.js" defer></script>
+  <style>
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      bottom: 0.5rem;
+      width: 2px;
+      background: var(--border);
+    }
+    .timeline-entry {
+      position: relative;
+      padding: 1.5rem 0 2rem 2rem;
+      border-bottom: none;
+    }
+    .timeline-entry:last-child {
+      padding-bottom: 0;
+    }
+    .timeline-entry::before {
+      content: '';
+      position: absolute;
+      left: -2rem;
+      top: 1.85rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      z-index: 1;
+    }
+    .timeline-entry.latest::before {
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 8px rgba(184,232,50,0.4);
+    }
+    .timeline-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 0.06em;
+      margin-bottom: 0.5rem;
+    }
+    .timeline-title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 1.3rem;
+      font-weight: 300;
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+    .timeline-title a {
+      color: var(--text);
+      text-decoration: none;
+    }
+    .timeline-title a:hover {
+      color: var(--accent);
+    }
+    .timeline-excerpt {
+      font-size: 15px;
+      color: var(--text3);
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+    .timeline-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 0.5rem;
+    }
+    .timeline-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      border: 1px solid var(--border);
+      padding: 1px 7px;
+      border-radius: 3px;
+      letter-spacing: 0.06em;
+    }
+    .timeline-tag.accent {
+      color: var(--accent);
+      border-color: rgba(184,232,50,0.3);
+    }
+    .timeline-tps {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--accent2);
+      letter-spacing: 0.04em;
+    }
+    .timeline-tps .tps-val {
+      color: var(--accent);
+      font-weight: 500;
+    }
+    .progress-bar-wrap {
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+    .progress-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+    .blog-header-info {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .blog-header-info::before {
+      content: '';
+      width: 20px;
+      height: 1px;
+      background: var(--accent);
+    }
+    .blog-header-info span {
+      color: var(--accent);
+    }
+  </style>
 </head>
 <body>
   <nav class="site-nav">
@@ -21,7 +161,6 @@
       <a href="../index.html">Home</a>
       <a href="../about.html">About</a>
       <a href="index.html" class="active">Blog</a>
-
     </div>
   </nav>
 
@@ -29,40 +168,84 @@
     <div class="container">
       <h1>Blog</h1>
 
+      <div class="blog-header-info">
+        Local AI research &middot; <span>40 &rarr; 64 t/s</span> &middot; 4 experiments
+      </div>
+
       <div class="search-wrap">
         <input id="search" type="search" placeholder="Search posts&hellip;" autocomplete="off">
       </div>
 
-      <div id="postList">
+      <div id="postList" class="timeline">
 
-        <div class="post-item" data-search="qwen3 35b moe llama.cpp ncmoe tps inference optimization rtx 5060 ti consumer hardware">
-          <h2><a href="anantamatrix_blog_01.html">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</a></h2>
-          <p>Ollama leaves 2.2&times; performance on the table for MoE models &mdash; here's how to recover it.</p>
-          <p class="post-meta">9 May 2026</p>
+        <div class="timeline-entry" data-search="ollama windows environment variable default model directory">
+          <div class="timeline-date">25 May 2025</div>
+          <div class="timeline-tags">
+            <span class="timeline-tag accent">Setup</span>
+            <span class="timeline-tag">Ollama</span>
+            <span class="timeline-tag">Windows</span>
+          </div>
+          <div class="timeline-title"><a href="change-ollama-model-dir.html">Change Default Directory for Ollama</a></div>
+          <p class="timeline-excerpt">How to change the default directory for Ollama models on Windows using an environment variable.</p>
         </div>
 
-        <hr>
-
-        <div class="post-item" data-search="claude code cline proxy llama-server anthropic openai api local llm metrics dashboard streaming">
-          <h2><a href="compiledthoughts_blog_02_proxy.html">Using Claude Code and Cline with a Local LLM</a></h2>
-          <p>A 600-line proxy bridges Anthropic's API and llama-server — with lifetime metrics tracking and a live dashboard.</p>
-          <p class="post-meta">12 May 2026</p>
+        <div class="timeline-entry" data-search="what are llms large language models ai artificial intelligence deep learning transformer">
+          <div class="timeline-date">25 May 2025</div>
+          <div class="timeline-tags">
+            <span class="timeline-tag accent">Explainer</span>
+            <span class="timeline-tag">LLMs</span>
+            <span class="timeline-tag">AI</span>
+          </div>
+          <div class="timeline-title"><a href="what-are-llms.html">What Are LLMs (Large Language Models)?</a></div>
+          <p class="timeline-excerpt">A clear breakdown of what large language models are, how they work, and why they matter for local inference.</p>
         </div>
 
-        <hr>
-
-        <div class="post-item" data-search="what are llms large language models ai artificial intelligence deep learning transformer">
-          <h2><a href="what-are-llms.html">What Are LLMs (Large Language Models)?</a></h2>
-          <p>What Are LLMs (Large Language Models)?</p>
-          <p class="post-meta">25 May 2025</p>
+        <div class="timeline-entry" data-search="qwen3 35b moe llama.cpp ncmoe tps inference optimization rtx 5060 ti consumer hardware">
+          <div class="timeline-date">9 May 2026 &middot; Experiment 01</div>
+          <div class="timeline-tags">
+            <span class="timeline-tag accent">Experiment 01</span>
+            <span class="timeline-tag">MoE</span>
+            <span class="timeline-tag">llama.cpp</span>
+            <span class="timeline-tag">RTX 5060 Ti</span>
+          </div>
+          <div class="timeline-title"><a href="anantamatrix_blog_01.html">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</a></div>
+          <p class="timeline-excerpt">Ollama leaves 2.2&times; performance on the table for MoE models &mdash; here's how to recover it.</p>
+          <div class="progress-bar-wrap">
+            <div class="progress-track"><div class="progress-fill" style="width:56%;background:var(--amber)"></div></div>
+            <span class="progress-label"><span class="tps-val">36 t/s</span> &rarr; 40 t/s</span>
+          </div>
         </div>
 
-        <hr>
+        <div class="timeline-entry" data-search="claude code cline proxy llama-server anthropic openai api local llm metrics dashboard streaming">
+          <div class="timeline-date">12 May 2026 &middot; Experiment 02</div>
+          <div class="timeline-tags">
+            <span class="timeline-tag accent">Experiment 02</span>
+            <span class="timeline-tag">Claude Code</span>
+            <span class="timeline-tag">Cline</span>
+            <span class="timeline-tag">Proxy</span>
+          </div>
+          <div class="timeline-title"><a href="compiledthoughts_blog_02_proxy.html">Using Claude Code and Cline with a Local LLM</a></div>
+          <p class="timeline-excerpt">A 600-line proxy bridges Anthropic's API and llama-server &mdash; with lifetime metrics tracking and a live dashboard.</p>
+          <div class="progress-bar-wrap">
+            <div class="progress-track"><div class="progress-fill" style="width:89%;background:var(--accent2)"></div></div>
+            <span class="progress-label"><span class="tps-val">57 t/s</span> &middot; LM cache</span>
+          </div>
+        </div>
 
-        <div class="post-item" data-search="change default directory ollama models windows environment variable">
-          <h2><a href="change-ollama-model-dir.html">Change Default Directory for Ollama</a></h2>
-          <p>How to Change Default Directory for Ollama Models on Windows</p>
-          <p class="post-meta">25 May 2025</p>
+        <div class="timeline-entry latest" data-search="lm cache kv checkpointing mtp multi-token prediction llama.cpp speculative decoding">
+          <div class="timeline-date">16 May 2026 &middot; Experiment 03</div>
+          <div class="timeline-tags">
+            <span class="timeline-tag accent">Experiment 03</span>
+            <span class="timeline-tag">LM Cache</span>
+            <span class="timeline-tag">MTP</span>
+            <span class="timeline-tag">llama.cpp</span>
+          </div>
+          <div class="timeline-title"><a href="compiledthoughts_blog_03_kv.html">LM Cache, KV Checkpointing, and MTP</a></div>
+          <p class="timeline-excerpt">The proxy showed 57 TPS, but llama-cli gave 36. Same hardware. This post answers why &mdash; then adds MTP to reach 64 TPS at 131k context.</p>
+          <div class="progress-bar-wrap">
+            <div class="progress-track"><div class="progress-fill" style="width:100%;background:var(--accent)"></div></div>
+            <span class="progress-label"><span class="tps-val">64 t/s</span> &middot; 131k ctx &middot; MTP</span>
+          </div>
         </div>
 
       </div>
