@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LM Cache, KV Checkpointing, and MTP — Compiled Thoughts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital,wght@0,9..144,300;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0c0c0a; --bg2: #141412; --bg3: #1c1c19;
+    --border: #252520; --border2: #2e2e28;
+    --text: #e2dfd6; --text2: #8a8880; --text3: #4a4840;
+    --accent: #b8e832; --accent2: #32e8a0; --red: #e85032; --blue: #3298e8; --amber: #e8a032;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 17px; line-height: 1.75; font-weight: 300; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(12,12,10,0.92); backdrop-filter: blur(16px); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none; }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); text-decoration: none; }
+  .nav-links a:hover { color: var(--text2); }
+  .container { max-width: 760px; margin: 0 auto; padding: 0 2rem; }
+  .hero { padding: 8rem 0 3rem; border-bottom: 1px solid var(--border); }
+  .series-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  .series-tag::before { content: ''; width: 20px; height: 1px; background: var(--accent); }
+  h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; font-weight: 300; margin-bottom: 1.5rem; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .hero-meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .hero-summary { font-size: 1.05rem; color: var(--text2); border-left: 2px solid var(--border); padding-left: 1.5rem; margin-top: 2rem; line-height: 1.7; }
+  .content { padding: 3rem 0 6rem; }
+  h2 { font-family: 'Instrument Serif', serif; font-size: 1.7rem; font-weight: 300; margin: 3.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  h3 { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; margin: 2rem 0 0.75rem; }
+  p { margin-bottom: 1.25rem; color: var(--text2); }
+  strong { color: var(--text); font-weight: 500; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.7; color: #c8c5bc; }
+  code { font-family: 'DM Mono', monospace; font-size: 13px; background: var(--bg3); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; color: var(--accent2); }
+  pre code { background: none; border: none; padding: 0; color: inherit; }
+  .callout { border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; background: var(--bg2); }
+  .callout.good { border-color: rgba(184,232,50,0.3); background: rgba(184,232,50,0.04); }
+  .callout.bad { border-color: rgba(232,80,50,0.3); background: rgba(232,80,50,0.04); }
+  .callout-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .callout.good .callout-label { color: var(--accent); }
+  .callout.bad .callout-label { color: var(--red); }
+  .callout p { margin: 0; font-size: 15px; }
+  .insight { border-left: 2px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: rgba(184,232,50,0.03); }
+  .insight p { margin: 0; color: var(--text); font-size: 15px; line-height: 1.65; }
+  .big-stat { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; min-width: 120px; }
+  .stat-num { font-family: 'DM Mono', monospace; font-size: 2rem; font-weight: 500; line-height: 1; display: block; }
+  .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; display: block; }
+  .chart-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+  .chart-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; }
+  th { text-align: left; padding: 0.5rem 1rem; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+  td { padding: 0.6rem 1rem; color: var(--text2); border-bottom: 1px solid rgba(42,42,36,0.5); }
+  tr.hl td { color: var(--text); background: rgba(184,232,50,0.04); }
+  .progress-stack { display: flex; flex-direction: column; gap: 10px; margin: 1.5rem 0; }
+  .progress-row { display: flex; align-items: center; gap: 12px; }
+  .progress-label { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); width: 210px; flex-shrink: 0; }
+  .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .progress-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); width: 60px; text-align: right; }
+  .next-post { border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-top: 4rem; background: var(--bg2); }
+  .next-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
+  .next-title { font-family: 'Instrument Serif', serif; font-size: 1.4rem; font-weight: 300; color: var(--text); margin-bottom: 0.75rem; }
+  .next-desc { font-size: 14px; color: var(--text3); margin: 0; }
+  footer { border-top: 1px solid var(--border); padding: 2rem 2.5rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  @media (max-width: 600px) { .hero { padding: 6rem 0 2rem; } h1 { font-size: 1.8rem; } .hero-meta { flex-direction: column; gap: 0.5rem; } .big-stat { flex-direction: column; } .progress-label { width: 140px; font-size: 11px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">compiled<span>.</span>thoughts</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Posts</a></li>
+    <li><a href="https://github.com/compiledthoughts" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <div class="series-tag">Experiment 03 — LM Cache + MTP</div>
+    <h1>LM Cache, KV Checkpointing, and <em>MTP</em></h1>
+    <div class="hero-meta">
+      <span>May 16, 2026</span>
+      <span>RTX 5060 Ti · 32GB DDR5</span>
+      <span>llama.cpp b9174 · MTP PR #22673</span>
+    </div>
+    <div class="hero-summary">
+      <a href="compiledthoughts_blog_02_proxy.html">Experiment 02</a> ended with a question: the proxy dashboard showed 57 TPS from llama-server, but running the same model with llama-cli gave 36 TPS. Same hardware, same flags. This post answers why — then adds MTP on top to reach 64 TPS at 131k context.
+    </div>
+  </div>
+
+  <div class="content">
+
+    <h2>Why llama-server is Faster Than llama-cli</h2>
+
+    <p>The answer is KV cache checkpointing. llama-server stores the attention state of each conversation as checkpoints. When a new message arrives, the server finds the nearest matching checkpoint and restores it — only processing the new tokens since that checkpoint.</p>
+
+    <pre><code>restored context checkpoint (pos_min = 11924, n_tokens = 11925)
+prompt eval: 744 tok/s  ← only 771 NEW tokens processed
+eval:        61.96 t/s  ← generation</code></pre>
+
+    <p>In this example, 11,925 tokens were restored from cache. Only 771 new tokens needed processing — a 94% cache hit. The prompt eval that takes 14 seconds from scratch completes in 1 second.</p>
+
+    <p>llama-cli has no persistent state between runs. Every invocation reprocesses the full prompt from scratch. That's the 36 TPS ceiling — and why the server mode number from Experiment 02 looked suspiciously high.</p>
+
+    <div class="insight">
+      <p>The LM cache isn't optional for real coding use. Cline builds up 10k-40k tokens of context across a session. Without checkpointing, every message would require reprocessing the full history — adding 10-30 seconds of latency per turn.</p>
+    </div>
+
+    <h3>How checkpoints work</h3>
+
+    <p>llama-server creates a checkpoint every 8192 tokens during prompt processing. The <code>-ctxcp 64</code> flag allows up to 64 checkpoints per slot. When a new prompt arrives, the server scans backwards to find the longest matching prefix, restores that checkpoint, then processes only the divergent tail. Each checkpoint is roughly 63-75 MiB of KV state.</p>
+
+    <h2>MTP: Multi-Token Prediction</h2>
+
+    <p>With llama-server's LM cache giving 57 TPS, the next step was MTP. MTP is speculative decoding without a separate draft model — the Qwen3.6 35B-A3B model was trained with an additional prediction head that guesses the next 2-4 tokens. llama-server verifies them in a single forward pass. Correct guesses are accepted for free. Zero quality loss — rejected drafts fall back to standard sampling.</p>
+
+    <h3>MTP requires training-time support</h3>
+
+    <p>You cannot add MTP to an existing model at inference time. The prediction head must exist in the weights from training. Qwen3.6 35B-A3B has one — it ships as a separate GGUF variant with the MTP tensors fused in (~19.4GB, same quantization level as the base model).</p>
+
+    <h3>Building llama.cpp with MTP support</h3>
+
+    <pre><code>cd ~/llama.cpp
+git fetch origin pull/22673/head:pr-22673
+git merge --no-ff pr-22673 -m "Merge PR #22673: MTP Support"
+cmake -B build -DGGML_CUDA=ON -DGGML_AVX2=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release -j8</code></pre>
+
+    <p>Download the MTP model:</p>
+
+    <pre><code>hf download localweights/Qwen3.6-35B-A3B-MTP-IQ4_XS-GGUF \
+  --local-dir D:/aiprojects/models/</code></pre>
+
+    <h3>The OOM problem and -fitt 1536</h3>
+
+    <p>The first attempt at 65k context crashed with OOM. The MTP draft context needs VRAM headroom that wasn't being reserved — llama.cpp by default tries to use all available VRAM for the model, leaving nothing for the draft.</p>
+
+    <p><code>-fitt 1536</code> fixes this: it tells llama.cpp to fit the model, then leave exactly 1536MB free for the draft context and KV cache. llama.cpp auto-balances the CPU/GPU expert split to satisfy the constraint — effectively replacing the manual <code>-ncmoe 11</code> tuning from Experiment 01.</p>
+
+    <p>With <code>-fitt 1536</code>: 131k context loaded cleanly, MTP active, no OOM.</p>
+
+    <h3>Full command</h3>
+
+    <pre><code>./llama-server \
+  -m Qwen3.6-35B-A3B-MTP-IQ4_XS.gguf \
+  -fitt 1536 \          # leave 1536MB for MTP draft + KV cache
+  -c 131072 \           # 131k context
+  -n 32768 \
+  -fa on \
+  -np 1 \               # required: MTP supports single slot only
+  -ctk q8_0 -ctv q8_0 \
+  -ctkd q8_0 -ctvd q8_0 \
+  -ctxcp 64 \
+  --no-mmap --mlock \
+  --no-warmup \
+  --spec-type draft-mtp \
+  --spec-draft-n-max 2 \
+  --jinja --metrics \
+  --host 0.0.0.0 --port 8080</code></pre>
+
+    <h3>llama-cli vs llama-server — again</h3>
+
+    <p>The same pattern repeated. Running the MTP model with <code>llama-cli</code>: <strong>10.9 TPS.</strong> Running it through <code>llama-server</code>: <strong>64 TPS.</strong> The server's batched speculative verification loop is what makes MTP effective. Always benchmark with the server.</p>
+
+    <div class="callout bad">
+      <div class="callout-label">llama-cli + MTP</div>
+      <p>10.9 TPS — MTP loads but the speculative loop is not optimized for interactive mode.</p>
+    </div>
+
+    <div class="callout good">
+      <div class="callout-label">llama-server + MTP</div>
+      <p><strong>64.19 TPS</strong> — 76% draft acceptance rate. 131k context. GPU at 100% during generation.</p>
+    </div>
+
+    <h2>Results</h2>
+
+    <div class="big-stat">
+      <div class="stat">
+        <span class="stat-num" style="color:var(--accent)">64.19</span>
+        <span class="stat-label">tokens/sec</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" style="color:var(--accent2)">76%</span>
+        <span class="stat-label">acceptance rate</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">131k</span>
+        <span class="stat-label">context tokens</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num" style="color:var(--amber)">3.5×</span>
+        <span class="stat-label">over Ollama</span>
+      </div>
+    </div>
+
+    <div class="progress-stack">
+      <div class="progress-row">
+        <div class="progress-label">Ollama default</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:28%;background:var(--red)"></div></div>
+        <div class="progress-val">18 t/s</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">llama-cli -ncmoe 11</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:56%;background:var(--amber)"></div></div>
+        <div class="progress-val">36 t/s</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">llama-server (LM cache)</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:89%;background:var(--accent2)"></div></div>
+        <div class="progress-val">57 t/s</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-label">llama-server + MTP ✦</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--accent)"></div></div>
+        <div class="progress-val">64 t/s</div>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>Step</th><th>Bottleneck removed</th><th>TPS</th></tr></thead>
+      <tbody>
+        <tr><td>Ollama → llama-cli -ncmoe 11</td><td>Naive CPU/GPU split</td><td>18 → 36</td></tr>
+        <tr><td>llama-cli → llama-server</td><td>Full prompt reprocessing every request</td><td>36 → 57</td></tr>
+        <tr class="hl"><td>+ MTP draft-mtp</td><td>Sequential token generation</td><td>57 → 64</td></tr>
+      </tbody>
+    </table>
+
+    <h2>Real-World Cline Numbers</h2>
+
+    <p>The benchmark is 500 tokens on a fresh context. Real Cline sessions accumulate much more. TPS degrades as context grows — the KV cache competes with expert weights for VRAM.</p>
+
+    <div class="chart-wrap">
+      <div class="chart-title">TPS and acceptance rate vs context size — real Cline sessions</div>
+      <div style="position:relative;height:220px">
+        <canvas id="chart1"></canvas>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>Scenario</th><th>TPS</th><th>Acceptance</th><th>Context</th></tr></thead>
+      <tbody>
+        <tr><td>Standard benchmark</td><td>64</td><td>76%</td><td>~1k</td></tr>
+        <tr><td>Cline coding task</td><td>57–66</td><td>74–93%</td><td>~25k</td></tr>
+        <tr><td>Cline deep session</td><td>46–53</td><td>55–67%</td><td>~43k</td></tr>
+        <tr><td>Claude Code agentic</td><td>46–53</td><td>55–67%</td><td>~43k</td></tr>
+      </tbody>
+    </table>
+
+    <p>Cline's 93% acceptance rate on fresh coding tasks is the standout number. Code is highly predictable — the MTP head guesses correctly nearly every time. Claude Code's multi-agent parallel requests split GPU compute across slots and accumulate more context, reducing per-request TPS.</p>
+
+    <p>The degradation at 43k context is the KV cache spilling into shared GPU memory — PCIe-backed DDR5 at 32 GB/s instead of dedicated VRAM at 448 GB/s. TurboQuant KV compression would keep the cache in VRAM at much larger contexts. That's Experiment 04.</p>
+
+    <div class="next-post">
+      <div class="next-label">Next — Experiment 04</div>
+      <div class="next-title">80B Model on 41GB: When NVMe Becomes the Bottleneck</div>
+      <p class="next-desc">Qwen3 Coder Next 80B-A3B at Q4. 7GB spills to NVMe at 3-4 GB/s real-world speed. Same MTP + -fitt approach. Does it hold at double the model size? What's the minimum viable stack when the model no longer fits in fast memory?</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>compiledthoughts.dev · Local AI Infrastructure Research · 2026</footer>
+
+<script>
+const gc = 'rgba(42,42,36,0.8)', tc = '#4a4840';
+new Chart(document.getElementById('chart1'), {
+  type: 'line',
+  data: {
+    labels: ['~1k (benchmark)', '~25k (Cline)', '~43k (deep)'],
+    datasets: [
+      { label: 'TPS', data: [64, 62, 49], borderColor: '#b8e832', backgroundColor: 'rgba(184,232,50,0.08)', pointBackgroundColor: '#b8e832', pointRadius: 5, borderWidth: 2, fill: true, tension: 0.3, yAxisID: 'y' },
+      { label: 'Acceptance %', data: [76, 84, 61], borderColor: '#32e8a0', backgroundColor: 'transparent', pointBackgroundColor: 'rgba(50,232,160,0.4)', pointRadius: 5, borderWidth: 1.5, borderDash: [4,3], tension: 0.3, yAxisID: 'y2' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.dataset.label === 'TPS' ? ` ${ctx.parsed.y} t/s` : ` ${ctx.parsed.y}% acceptance` } } },
+    scales: {
+      x: { ticks: { color: tc, font: { size: 11 } }, grid: { color: gc } },
+      y: { position: 'left', title: { display: true, text: 't/s', color: '#b8e832', font: { size: 11 } }, ticks: { color: tc, font: { size: 11 } }, grid: { color: gc }, min: 0, max: 80 },
+      y2: { position: 'right', title: { display: true, text: 'acceptance %', color: '#32e8a0', font: { size: 11 } }, ticks: { color: tc, font: { size: 11 }, callback: v => v+'%' }, grid: { display: false }, min: 0, max: 100 }
+    }
+  }
+});
+</script>
+</body>
+</html>
