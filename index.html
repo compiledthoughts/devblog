@@ -411,23 +411,23 @@
 
   
   <div class="hero-stats">
-    <div class="hero-stats-label">Current state &middot; 16GB VRAM</div>
+    <div class="hero-stats-label">Progress &middot; Qwen3.6 35B-A3B &middot; RTX 5060 Ti</div>
     <div class="hero-stats-nums">
       <div class="stat-item">
-        <span class="stat-num">Qwen<span>3.6</span> 35B</span>
-        <span class="stat-label">model &middot; MoE</span>
+        <span class="stat-num">18<span> t/s</span></span>
+        <span class="stat-label">Ollama default</span>
       </div>
       <div class="stat-item">
-        <span class="stat-num">40<span>.4</span></span>
-        <span class="stat-label">tokens/sec &middot; 35B model</span>
+        <span class="stat-num">36<span> t/s</span></span>
+        <span class="stat-label">llama-cli -ncmoe 11</span>
       </div>
       <div class="stat-item">
-        <span class="stat-num">2<span>.2&times;</span></span>
-        <span class="stat-label">over Ollama default</span>
+        <span class="stat-num">57<span> t/s</span></span>
+        <span class="stat-label">llama-server + LM cache</span>
       </div>
       <div class="stat-item">
-        <span class="stat-num">$<span>0</span></span>
-        <span class="stat-label">cloud cost &middot; fully local</span>
+        <span class="stat-num">64<span> t/s</span></span>
+        <span class="stat-label">+ MTP &middot; 131k ctx</span>
       </div>
     </div>
   </div>
@@ -438,8 +438,26 @@
 <section id="posts">
   <div class="section-header">
     <span class="section-title">Latest Posts</span>
-    <span class="section-count">4 published</span>
+    <span class="section-count">5 published</span>
   </div>
+
+  <a class="post-item" href="blog/compiledthoughts_blog_03_kv.html">
+    <div class="post-date">16 May 2026</div>
+    <div class="post-body">
+      <div class="post-tags">
+        <span class="tag accent">Experiment 03</span>
+        <span class="tag">LM Cache</span>
+        <span class="tag">MTP</span>
+        <span class="tag">llama.cpp</span>
+      </div>
+      <div class="post-title">LM Cache, KV Checkpointing, and MTP</div>
+      <p class="post-excerpt">The proxy showed 57 TPS, but llama-cli gave 36. Same hardware. This post answers why — then adds MTP to reach 64 TPS at 131k context.</p>
+      <div class="post-meta">
+        <span class="post-read">10 min read</span>
+      </div>
+    </div>
+    <div class="post-arrow">&rarr;</div>
+  </a>
 
   <a class="post-item" href="blog/anantamatrix_blog_01.html">
     <div class="post-date">9 May 2026</div>
