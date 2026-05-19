@@ -180,9 +180,6 @@
   .hero-github svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
 
   .hero-stats {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
     position: relative; z-index: 1;
     padding-top: 2rem;
     margin-top: 1rem;
@@ -196,28 +193,79 @@
     text-transform: uppercase;
     padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border2);
+    margin-bottom: 1.25rem;
   }
   .hero-stats-nums {
     display: flex;
-    gap: 3rem;
+    flex-direction: column;
+    gap: 0;
+    padding-top: 0.25rem;
   }
-  .stat-num {
+  .stat-step {
+    display: grid;
+    grid-template-columns: 88px 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-step:last-child { border-bottom: none; }
+  .stat-step-num {
     font-family: 'DM Mono', monospace;
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 500;
-    color: var(--text);
+    color: var(--text2);
     line-height: 1;
-    display: block;
+    white-space: nowrap;
   }
-  .stat-num span { color: var(--accent); }
-  .stat-label {
+  .stat-step-num span {
+    font-size: 0.7rem;
+    color: var(--text3);
+    font-weight: 400;
+  }
+  .stat-step.best .stat-step-num { color: var(--accent); }
+  .stat-step.best .stat-step-num span { color: var(--accent); }
+  .stat-step-mid { min-width: 0; }
+  .stat-step-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.45rem;
+  }
+  .stat-step.best .stat-step-label { color: var(--text2); }
+  .stat-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .stat-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 1px;
+    opacity: 0.3;
+  }
+  .stat-step.best .stat-bar-fill { opacity: 1; }
+  .stat-step-link {
     font-family: 'DM Mono', monospace;
     font-size: 10px;
     color: var(--text3);
-    letter-spacing: 0.1em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    margin-top: 4px;
-    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .stat-step-link:hover { color: var(--accent); }
+  .stat-step.best .stat-step-link { color: var(--accent); }
+  .stat-step-noop {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--border2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
   .scroll-hint {
     position: absolute;
@@ -370,6 +418,10 @@
     nav { padding: 1rem 1.5rem; }
     .nav-links { display: none; }
     .hero { padding: 6rem 1.5rem 3rem; }
+    .hero-stats-label { font-size: 11px; margin-bottom: 0.75rem; }
+    .stat-step { grid-template-columns: 72px 1fr; gap: 1rem; }
+    .stat-step-link, .stat-step-noop { display: none; }
+    .stat-step-num { font-size: 1.5rem; }
     .section-header { padding: 2rem 1.5rem 1rem; }
     .post-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.5rem; }
     .post-date, .post-arrow { display: none; }
@@ -413,21 +465,37 @@
   <div class="hero-stats">
     <div class="hero-stats-label">Progress &middot; Qwen3.6 35B-A3B &middot; RTX 5060 Ti</div>
     <div class="hero-stats-nums">
-      <div class="stat-item">
-        <span class="stat-num">18<span> t/s</span></span>
-        <span class="stat-label">Ollama default</span>
+      <div class="stat-step best">
+        <div class="stat-step-num">64<span> t/s</span></div>
+        <div class="stat-step-mid">
+          <div class="stat-step-label">+ MTP &middot; 131k ctx</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div>
+        </div>
+        <a class="stat-step-link" href="blog/compiledthoughts_blog_03_kv.html">Experiment 03 &rarr;</a>
       </div>
-      <div class="stat-item">
-        <span class="stat-num">36<span> t/s</span></span>
-        <span class="stat-label">llama-cli -ncmoe 11</span>
+      <div class="stat-step">
+        <div class="stat-step-num">57<span> t/s</span></div>
+        <div class="stat-step-mid">
+          <div class="stat-step-label">llama-server &middot; LM cache</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:89%"></div></div>
+        </div>
+        <a class="stat-step-link" href="blog/compiledthoughts_blog_02_proxy.html">Experiment 02 &rarr;</a>
       </div>
-      <div class="stat-item">
-        <span class="stat-num">57<span> t/s</span></span>
-        <span class="stat-label">llama-server + LM cache</span>
+      <div class="stat-step">
+        <div class="stat-step-num">36<span> t/s</span></div>
+        <div class="stat-step-mid">
+          <div class="stat-step-label">llama-cli &middot; -ncmoe 11</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:56%"></div></div>
+        </div>
+        <a class="stat-step-link" href="blog/anantamatrix_blog_01.html">Experiment 01 &rarr;</a>
       </div>
-      <div class="stat-item">
-        <span class="stat-num">64<span> t/s</span></span>
-        <span class="stat-label">+ MTP &middot; 131k ctx</span>
+      <div class="stat-step">
+        <div class="stat-step-num">18<span> t/s</span></div>
+        <div class="stat-step-mid">
+          <div class="stat-step-label">Ollama &mdash; default settings</div>
+          <div class="stat-bar"><div class="stat-bar-fill" style="width:28%"></div></div>
+        </div>
+        <span class="stat-step-noop">baseline</span>
       </div>
     </div>
   </div>
@@ -450,7 +518,7 @@
         <span class="tag">MTP</span>
         <span class="tag">llama.cpp</span>
       </div>
-      <div class="post-title">LM Cache, KV Checkpointing, and MTP</div>
+      <div class="post-title">Reaching 64 t/s: LM Cache, KV Checkpointing, and MTP</div>
       <p class="post-excerpt">The proxy showed 57 TPS, but llama-cli gave 36. Same hardware. This post answers why — then adds MTP to reach 64 TPS at 131k context.</p>
       <div class="post-meta">
         <span class="post-read">10 min read</span>

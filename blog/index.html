@@ -178,41 +178,19 @@
 
       <div id="postList" class="timeline">
 
-        <div class="timeline-entry" data-search="ollama windows environment variable default model directory">
-          <div class="timeline-date">25 May 2025</div>
+        <div class="timeline-entry latest" data-search="lm cache kv checkpointing mtp multi-token prediction llama.cpp speculative decoding">
+          <div class="timeline-date">16 May 2026 &middot; Experiment 03</div>
           <div class="timeline-tags">
-            <span class="timeline-tag accent">Setup</span>
-            <span class="timeline-tag">Ollama</span>
-            <span class="timeline-tag">Windows</span>
-          </div>
-          <div class="timeline-title"><a href="change-ollama-model-dir.html">Change Default Directory for Ollama</a></div>
-          <p class="timeline-excerpt">How to change the default directory for Ollama models on Windows using an environment variable.</p>
-        </div>
-
-        <div class="timeline-entry" data-search="what are llms large language models ai artificial intelligence deep learning transformer">
-          <div class="timeline-date">25 May 2025</div>
-          <div class="timeline-tags">
-            <span class="timeline-tag accent">Explainer</span>
-            <span class="timeline-tag">LLMs</span>
-            <span class="timeline-tag">AI</span>
-          </div>
-          <div class="timeline-title"><a href="what-are-llms.html">What Are LLMs (Large Language Models)?</a></div>
-          <p class="timeline-excerpt">A clear breakdown of what large language models are, how they work, and why they matter for local inference.</p>
-        </div>
-
-        <div class="timeline-entry" data-search="qwen3 35b moe llama.cpp ncmoe tps inference optimization rtx 5060 ti consumer hardware">
-          <div class="timeline-date">9 May 2026 &middot; Experiment 01</div>
-          <div class="timeline-tags">
-            <span class="timeline-tag accent">Experiment 01</span>
-            <span class="timeline-tag">MoE</span>
+            <span class="timeline-tag accent">Experiment 03</span>
+            <span class="timeline-tag">LM Cache</span>
+            <span class="timeline-tag">MTP</span>
             <span class="timeline-tag">llama.cpp</span>
-            <span class="timeline-tag">RTX 5060 Ti</span>
           </div>
-          <div class="timeline-title"><a href="anantamatrix_blog_01.html">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</a></div>
-          <p class="timeline-excerpt">Ollama leaves 2.2&times; performance on the table for MoE models &mdash; here's how to recover it.</p>
+          <div class="timeline-title"><a href="compiledthoughts_blog_03_kv.html">Reaching 64 t/s: LM Cache, KV Checkpointing, and MTP</a></div>
+          <p class="timeline-excerpt">The proxy showed 57 TPS, but llama-cli gave 36. Same hardware. This post answers why &mdash; then adds MTP to reach 64 TPS at 131k context.</p>
           <div class="progress-bar-wrap">
-            <div class="progress-track"><div class="progress-fill" style="width:56%;background:var(--amber)"></div></div>
-            <span class="progress-label"><span class="tps-val">36 t/s</span> &rarr; 40 t/s</span>
+            <div class="progress-track"><div class="progress-fill" style="width:100%;background:var(--accent)"></div></div>
+            <span class="progress-label"><span class="tps-val">64 t/s</span> &middot; 131k ctx &middot; MTP</span>
           </div>
         </div>
 
@@ -232,20 +210,42 @@
           </div>
         </div>
 
-        <div class="timeline-entry latest" data-search="lm cache kv checkpointing mtp multi-token prediction llama.cpp speculative decoding">
-          <div class="timeline-date">16 May 2026 &middot; Experiment 03</div>
+        <div class="timeline-entry" data-search="qwen3 35b moe llama.cpp ncmoe tps inference optimization rtx 5060 ti consumer hardware">
+          <div class="timeline-date">9 May 2026 &middot; Experiment 01</div>
           <div class="timeline-tags">
-            <span class="timeline-tag accent">Experiment 03</span>
-            <span class="timeline-tag">LM Cache</span>
-            <span class="timeline-tag">MTP</span>
+            <span class="timeline-tag accent">Experiment 01</span>
+            <span class="timeline-tag">MoE</span>
             <span class="timeline-tag">llama.cpp</span>
+            <span class="timeline-tag">RTX 5060 Ti</span>
           </div>
-          <div class="timeline-title"><a href="compiledthoughts_blog_03_kv.html">LM Cache, KV Checkpointing, and MTP</a></div>
-          <p class="timeline-excerpt">The proxy showed 57 TPS, but llama-cli gave 36. Same hardware. This post answers why &mdash; then adds MTP to reach 64 TPS at 131k context.</p>
+          <div class="timeline-title"><a href="anantamatrix_blog_01.html">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</a></div>
+          <p class="timeline-excerpt">Ollama leaves 2.2&times; performance on the table for MoE models &mdash; here's how to recover it.</p>
           <div class="progress-bar-wrap">
-            <div class="progress-track"><div class="progress-fill" style="width:100%;background:var(--accent)"></div></div>
-            <span class="progress-label"><span class="tps-val">64 t/s</span> &middot; 131k ctx &middot; MTP</span>
+            <div class="progress-track"><div class="progress-fill" style="width:56%;background:var(--amber)"></div></div>
+            <span class="progress-label"><span class="tps-val">36 t/s</span> &rarr; 40 t/s</span>
           </div>
+        </div>
+
+        <div class="timeline-entry" data-search="what are llms large language models ai artificial intelligence deep learning transformer">
+          <div class="timeline-date">25 May 2025</div>
+          <div class="timeline-tags">
+            <span class="timeline-tag accent">Explainer</span>
+            <span class="timeline-tag">LLMs</span>
+            <span class="timeline-tag">AI</span>
+          </div>
+          <div class="timeline-title"><a href="what-are-llms.html">What Are LLMs (Large Language Models)?</a></div>
+          <p class="timeline-excerpt">A clear breakdown of what large language models are, how they work, and why they matter for local inference.</p>
+        </div>
+
+        <div class="timeline-entry" data-search="ollama windows environment variable default model directory">
+          <div class="timeline-date">25 May 2025</div>
+          <div class="timeline-tags">
+            <span class="timeline-tag accent">Setup</span>
+            <span class="timeline-tag">Ollama</span>
+            <span class="timeline-tag">Windows</span>
+          </div>
+          <div class="timeline-title"><a href="change-ollama-model-dir.html">Change Default Directory for Ollama</a></div>
+          <p class="timeline-excerpt">How to change the default directory for Ollama models on Windows using an environment variable.</p>
         </div>
 
       </div>
