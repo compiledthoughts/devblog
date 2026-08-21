@@ -12,16 +12,18 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0c0c0a;
-    --bg2: #141412;
-    --bg3: #1c1c19;
-    --border: #252520;
-    --border2: #2e2e28;
-    --text: #e2dfd6;
-    --text2: #8a8880;
-    --text3: #706d65;
-    --accent: #b8e832;
-    --accent2: #32e8a0;
+    --bg: #ffffff;
+    --bg2: #f6f7f9;
+    --bg3: #eef0f3;
+    --border: #e3e6ea;
+    --border2: #d3d7de;
+    --text: #14161a;
+    --text2: #565c66;
+    --text3: #6b7280;
+    --accent: #4f46e5;
+    --accent2: #0d9488;
+    --red: #dc2626;
+    --amber: #b45309;
   }
 
   html { scroll-behavior: smooth; }
@@ -36,23 +38,13 @@
     min-height: 100vh;
   }
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.4;
-  }
-
   /* NAV */
   nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 100;
     padding: 1.1rem 2.5rem;
     display: flex; align-items: center; justify-content: space-between;
     border-bottom: 1px solid var(--border);
-    background: rgba(12,12,10,0.9);
+    background: rgba(255,255,255,0.88);
     backdrop-filter: blur(16px);
   }
   .nav-logo {
@@ -113,7 +105,7 @@
     font-family: 'Instrument Serif', serif;
     font-size: clamp(8rem, 18vw, 22rem);
     font-weight: 300;
-    color: rgba(255,255,255,0.018);
+    color: rgba(20,22,26,0.035);
     line-height: 1;
     pointer-events: none;
     white-space: nowrap;
@@ -175,8 +167,8 @@
   }
   .hero-cta:hover { opacity: 0.8; }
   .hero-cta-group { display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
-  .hero-github { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); text-decoration: none; background: rgba(184,232,50,0.06); border: 1px solid rgba(184,232,50,0.35); box-shadow: 0 0 10px rgba(184,232,50,0.12), inset 0 0 8px rgba(184,232,50,0.04); padding: .65rem 1.1rem; border-radius: 3px; transition: color 0.15s, border-color 0.15s, background 0.15s, box-shadow 0.15s; }
-  .hero-github:hover { background: rgba(184,232,50,0.12); border-color: rgba(184,232,50,0.6); box-shadow: 0 0 18px rgba(184,232,50,0.22), inset 0 0 10px rgba(184,232,50,0.07); }
+  .hero-github { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); text-decoration: none; background: var(--bg2); border: 1px solid var(--border2); padding: .65rem 1.1rem; border-radius: 3px; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+  .hero-github:hover { color: var(--text); border-color: var(--text3); background: var(--bg3); }
   .hero-github svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
 
   .hero-stats {
@@ -229,7 +221,7 @@
   .stat-step-label {
     font-family: 'DM Mono', monospace;
     font-size: 11px;
-    color: var(--text3);
+    color: var(--text2);
     letter-spacing: 0.04em;
     margin-bottom: 0.45rem;
   }
@@ -342,7 +334,7 @@
     border-radius: 3px;
     letter-spacing: 0.06em;
   }
-  .tag.accent { color: var(--accent); border-color: rgba(184,232,50,0.3); }
+  .tag.accent { color: var(--accent); border-color: rgba(79,70,229,0.3); }
   .post-title {
     font-family: 'Instrument Serif', serif;
     font-size: 1.25rem;
@@ -353,7 +345,7 @@
   }
   .post-excerpt {
     font-size: 15px;
-    color: var(--text3);
+    color: var(--text2);
     line-height: 1.6;
   }
   .post-meta {
@@ -395,7 +387,7 @@
   }
   .about-body {
     font-size: 15px;
-    color: var(--text3);
+    color: var(--text2);
     line-height: 1.7;
     margin-bottom: 1rem;
   }

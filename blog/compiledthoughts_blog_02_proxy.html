@@ -9,14 +9,14 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #0c0c0a; --bg2: #141412; --bg3: #1c1c19;
-    --border: #252520; --border2: #2e2e28;
-    --text: #e2dfd6; --text2: #8a8880; --text3: #4a4840;
-    --accent: #b8e832; --accent2: #32e8a0; --red: #e85032; --blue: #3298e8;
+    --bg: #ffffff; --bg2: #f6f7f9; --bg3: #eef0f3;
+    --border: #e3e6ea; --border2: #d3d7de;
+    --text: #14161a; --text2: #565c66; --text3: #6b7280;
+    --accent: #4f46e5; --accent2: #0d9488; --red: #dc2626; --blue: #2563eb;
   }
   html { scroll-behavior: smooth; }
   body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 17px; line-height: 1.75; font-weight: 300; }
-  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(12,12,10,0.92); backdrop-filter: blur(16px); }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.88); backdrop-filter: blur(16px); }
   .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none; }
   .nav-logo span { color: var(--accent); }
   .nav-links { display: flex; gap: 2rem; list-style: none; }
@@ -29,8 +29,8 @@
   h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; font-weight: 300; margin-bottom: 1.5rem; }
   h1 em { font-style: italic; color: var(--accent); }
   .hero-meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; }
-  .github-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(184,232,50,0.06); color: var(--accent) !important; font-family: 'DM Mono', monospace; font-size: 11px; padding: 5px 11px; border-radius: 5px; text-decoration: none !important; border: 1px solid rgba(184,232,50,0.35); box-shadow: 0 0 10px rgba(184,232,50,0.12), inset 0 0 8px rgba(184,232,50,0.04); transition: background 0.15s, border-color 0.15s, box-shadow 0.15s; margin-left: auto; }
-  .github-badge:hover { background: rgba(184,232,50,0.12); border-color: rgba(184,232,50,0.6); box-shadow: 0 0 18px rgba(184,232,50,0.22), inset 0 0 10px rgba(184,232,50,0.07); }
+  .github-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--bg2); color: var(--text2) !important; font-family: 'DM Mono', monospace; font-size: 11px; padding: 5px 11px; border-radius: 5px; text-decoration: none !important; border: 1px solid var(--border2); transition: background 0.15s, border-color 0.15s, color 0.15s; margin-left: auto; }
+  .github-badge:hover { background: var(--bg3); border-color: var(--text3); color: var(--text) !important; }
   .github-badge svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
   .hero-summary { font-size: 1.05rem; color: var(--text2); border-left: 2px solid var(--border); padding-left: 1.5rem; margin-top: 2rem; line-height: 1.7; }
   .content { padding: 3rem 0 6rem; }
@@ -40,23 +40,23 @@
   strong { color: var(--text); font-weight: 500; }
   a { color: var(--accent); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.7; color: #c8c5bc; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.7; color: #2b2e34; }
   code { font-family: 'DM Mono', monospace; font-size: 13px; background: var(--bg3); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; color: var(--accent2); }
   pre code { background: none; border: none; padding: 0; color: inherit; }
   .callout { border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; background: var(--bg2); }
-  .callout.good { border-color: rgba(184,232,50,0.3); background: rgba(184,232,50,0.04); }
-  .callout.info { border-color: rgba(50,152,232,0.3); background: rgba(50,152,232,0.04); }
+  .callout.good { border-color: rgba(79,70,229,0.3); background: rgba(79,70,229,0.04); }
+  .callout.info { border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.04); }
   .callout-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
   .callout.good .callout-label { color: var(--accent); }
   .callout.info .callout-label { color: var(--blue); }
   .callout p { margin: 0; font-size: 15px; }
-  .insight { border-left: 2px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: rgba(184,232,50,0.03); }
+  .insight { border-left: 2px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: rgba(79,70,229,0.03); }
   .insight p { margin: 0; color: var(--text); font-size: 15px; line-height: 1.65; }
   .arch-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text2); line-height: 1.8; }
   .arch-box .highlight { color: var(--accent); }
   table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; }
   th { text-align: left; padding: 0.5rem 1rem; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
-  td { padding: 0.6rem 1rem; color: var(--text2); border-bottom: 1px solid rgba(42,42,36,0.5); }
+  td { padding: 0.6rem 1rem; color: var(--text2); border-bottom: 1px solid rgba(226,229,234,0.5); }
   .next-post { border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-top: 4rem; background: var(--bg2); }
   .next-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
   .next-title { font-family: 'Instrument Serif', serif; font-size: 1.4rem; font-weight: 300; color: var(--text); margin-bottom: 0.75rem; }
