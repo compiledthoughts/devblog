@@ -1,622 +1,81 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Compiled Thoughts — Local AI Infrastructure Research</title>
-<meta name="description" content="Run the largest possible open-weight model on consumer hardware. Research notes on local LLM inference, MoE optimization, and private AI.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital,wght@0,9..144,300;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="assets/theme.js"></script>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #ffffff;
-    --bg2: #f6f7f9;
-    --bg3: #eef0f3;
-    --border: #e3e6ea;
-    --border2: #d3d7de;
-    --text: #14161a;
-    --text2: #565c66;
-    --text3: #6b7280;
-    --accent: #4f46e5;
-    --accent2: #0d9488;
-    --red: #dc2626;
-    --amber: #b45309;
-  }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 17px;
-    line-height: 1.75;
-    font-weight: 300;
-    min-height: 100vh;
-  }
-
-  /* NAV */
-  nav {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-    padding: 1.1rem 2.5rem;
-    display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.88);
-    backdrop-filter: blur(16px);
-  }
-  .nav-logo {
-    display: flex; align-items: center; gap: 0.6rem;
-    font-family: 'DM Mono', monospace;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-    text-decoration: none;
-    letter-spacing: -0.01em;
-  }
-  .nav-logo img { width: 28px; height: 28px; border-radius: 50%; display: block; }
-  .nav-logo span { color: var(--accent); }
-  .nav-links {
-    display: flex; gap: 2rem; list-style: none;
-  }
-  .nav-links a {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    color: var(--text3);
-    text-decoration: none;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .nav-links a:hover, .nav-links a.active { color: var(--text2); }
-  .theme-btn {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    background: none;
-    border: 1px solid var(--border2);
-    color: var(--text3);
-    padding: .3rem .65rem;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: color 0.2s, border-color 0.2s;
-  }
-  .theme-btn:hover { color: var(--text2); border-color: var(--text3); }
-
-  /* HERO */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 8rem 2.5rem 4rem;
-    position: relative;
-    border-bottom: 1px solid var(--border);
-    overflow: hidden;
-  }
-  .hero-bg-text {
-    position: absolute;
-    top: 50%;
-    left: -2%;
-    transform: translateY(-50%);
-    font-family: 'Instrument Serif', serif;
-    font-size: clamp(8rem, 18vw, 22rem);
-    font-weight: 300;
-    color: rgba(20,22,26,0.035);
-    line-height: 1;
-    pointer-events: none;
-    white-space: nowrap;
-    letter-spacing: -0.03em;
-    user-select: none;
-  }
-  .hero-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 1.5rem;
-    display: flex; align-items: center; gap: 10px;
-    position: relative; z-index: 1;
-  }
-  .hero-tag::before {
-    content: '';
-    width: 24px; height: 1px;
-    background: var(--accent);
-    flex-shrink: 0;
-  }
-  .hero h1 {
-    font-family: 'Instrument Serif', serif;
-    font-size: clamp(2.4rem, 6vw, 5rem);
-    line-height: 1.1;
-    font-weight: 300;
-    color: var(--text);
-    letter-spacing: -0.02em;
-    max-width: 860px;
-    position: relative; z-index: 1;
-    margin-bottom: 1.75rem;
-  }
-  .hero h1 em { font-style: italic; color: var(--accent); }
-  .hero-desc {
-    font-size: 1rem;
-    color: var(--text2);
-    max-width: 500px;
-    line-height: 1.7;
-    position: relative; z-index: 1;
-    margin-bottom: 3rem;
-    border-left: 1px solid var(--border2);
-    padding-left: 1.25rem;
-  }
-  .hero-cta {
-    display: inline-block;
-    align-self: flex-start;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--bg);
-    background: var(--accent);
-    padding: .65rem 1.4rem;
-    border-radius: 3px;
-    text-decoration: none;
-    position: relative; z-index: 1;
-    transition: opacity 0.15s;
-  }
-  .hero-cta:hover { opacity: 0.8; }
-  .hero-cta-group { display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
-  .hero-github { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); text-decoration: none; background: var(--bg2); border: 1px solid var(--border2); padding: .65rem 1.1rem; border-radius: 3px; transition: color 0.15s, border-color 0.15s, background 0.15s; }
-  .hero-github:hover { color: var(--text); border-color: var(--text3); background: var(--bg3); }
-  .hero-github svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
-
-  .hero-stats {
-    position: relative; z-index: 1;
-    padding-top: 2rem;
-    margin-top: 1rem;
-    border-top: 1px solid var(--border);
-  }
-  .hero-stats-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    color: var(--accent);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border2);
-    margin-bottom: 1.25rem;
-  }
-  .hero-stats-nums {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    padding-top: 0.25rem;
-  }
-  .stat-step {
-    display: grid;
-    grid-template-columns: 88px 1fr auto;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 0.9rem 0;
-    border-bottom: 1px solid var(--border);
-  }
-  .stat-step:last-child { border-bottom: none; }
-  .stat-step-num {
-    font-family: 'DM Mono', monospace;
-    font-size: 1.8rem;
-    font-weight: 500;
-    color: var(--text2);
-    line-height: 1;
-    white-space: nowrap;
-  }
-  .stat-step-num span {
-    font-size: 0.7rem;
-    color: var(--text3);
-    font-weight: 400;
-  }
-  .stat-step.best .stat-step-num { color: var(--accent); }
-  .stat-step.best .stat-step-num span { color: var(--accent); }
-  .stat-step-mid { min-width: 0; }
-  .stat-step-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--text2);
-    letter-spacing: 0.04em;
-    margin-bottom: 0.45rem;
-  }
-  .stat-step.best .stat-step-label { color: var(--text2); }
-  .stat-bar {
-    height: 2px;
-    background: var(--border);
-    border-radius: 1px;
-    overflow: hidden;
-  }
-  .stat-bar-fill {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 1px;
-    opacity: 0.3;
-  }
-  .stat-step.best .stat-bar-fill { opacity: 1; }
-  .stat-step-link {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: color 0.15s;
-  }
-  .stat-step-link:hover { color: var(--accent); }
-  .stat-step.best .stat-step-link { color: var(--accent); }
-  .stat-step-noop {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--border2);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-  .scroll-hint {
-    position: absolute;
-    bottom: 2rem; right: 2.5rem;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--text3);
-    letter-spacing: 0.1em;
-    writing-mode: vertical-rl;
-    display: flex; align-items: center; gap: 8px;
-    z-index: 1;
-  }
-  .scroll-hint::after {
-    content: '';
-    width: 1px; height: 40px;
-    background: var(--border2);
-  }
-
-  /* SECTIONS */
-  section { position: relative; z-index: 1; }
-
-  .section-header {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    padding: 3rem 2.5rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-  }
-  .section-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text3);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-  .section-count {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--text3);
-  }
-
-  /* POSTS */
-  .post-item {
-    display: grid;
-    grid-template-columns: 120px 1fr auto;
-    gap: 2rem;
-    align-items: start;
-    padding: 2rem 2.5rem;
-    border-bottom: 1px solid var(--border);
-    text-decoration: none;
-    transition: background 0.15s;
-    cursor: pointer;
-  }
-  .post-item:hover { background: var(--bg2); }
-
-  .post-date {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--text3);
-    padding-top: 4px;
-    white-space: nowrap;
-  }
-  .post-tags {
-    display: flex; gap: 6px; flex-wrap: wrap;
-    margin-bottom: 0.6rem;
-  }
-  .tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--text3);
-    border: 1px solid var(--border2);
-    padding: 1px 7px;
-    border-radius: 3px;
-    letter-spacing: 0.06em;
-  }
-  .tag.accent { color: var(--accent); border-color: rgba(79,70,229,0.3); }
-  .post-title {
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.25rem;
-    color: var(--text);
-    font-weight: 300;
-    line-height: 1.3;
-    margin-bottom: 0.5rem;
-  }
-  .post-excerpt {
-    font-size: 15px;
-    color: var(--text2);
-    line-height: 1.6;
-  }
-  .post-meta {
-    display: flex; gap: 1rem; align-items: center;
-    margin-top: 0.75rem;
-  }
-  .post-read {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--text3);
-  }
-  .post-arrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 18px;
-    color: var(--text3);
-    padding-top: 2px;
-    transition: color 0.15s, transform 0.15s;
-  }
-  .post-item:hover .post-arrow { color: var(--accent); transform: translateX(4px); }
-
-  /* ABOUT STRIP */
-  .about-strip {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-top: 1px solid var(--border);
-  }
-  .about-left {
-    padding: 3rem 2.5rem;
-    border-right: 1px solid var(--border);
-  }
-  .about-right { padding: 3rem 2.5rem; }
-  .about-heading {
-    font-family: 'Instrument Serif', serif;
-    font-size: 1.5rem;
-    font-weight: 300;
-    color: var(--text);
-    margin-bottom: 1rem;
-    line-height: 1.3;
-  }
-  .about-body {
-    font-size: 15px;
-    color: var(--text2);
-    line-height: 1.7;
-    margin-bottom: 1rem;
-  }
-
-  /* FOOTER */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 2rem 2.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--text3);
-    letter-spacing: 0.05em;
-    position: relative; z-index: 1;
-  }
-
-  @media (max-width: 768px) {
-    nav { padding: 1rem 1.5rem; }
-    .nav-links { display: none; }
-    .hero { padding: 6rem 1.5rem 3rem; }
-    .hero-stats-label { font-size: 11px; margin-bottom: 0.75rem; }
-    .stat-step { grid-template-columns: 72px 1fr; gap: 1rem; }
-    .stat-step-link, .stat-step-noop { display: none; }
-    .stat-step-num { font-size: 1.5rem; }
-    .section-header { padding: 2rem 1.5rem 1rem; }
-    .post-item { grid-template-columns: 1fr; gap: 0.5rem; padding: 1.5rem; }
-    .post-date, .post-arrow { display: none; }
-    .about-strip { grid-template-columns: 1fr; }
-    .about-left { border-right: none; border-bottom: 1px solid var(--border); padding: 2rem 1.5rem; }
-    .about-right { padding: 2rem 1.5rem; }
-    footer { flex-direction: column; gap: 1rem; text-align: center; }
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compiled Thoughts</title>
+  <meta name="description" content="A dev blog for developers who value clarity over clickbait.">
+  <link rel="stylesheet" href="/assets/style.css">
+  <script src="/assets/theme.js"></script>
 </head>
 <body>
+  <header class="site-header">
+    <a class="logo" href="/"><img src="/assets/img/logov5.png" alt="Compiled Thoughts" width="100" height="100"></a>
+    <nav>
+      <a href="/" class="active">Home</a>
+      <a href="/about.html">About</a>
+      <a href="/blog/">Blog</a>
+      <button id="themeBtn" class="theme-btn">Dark</button>
+    </nav>
+  </header>
 
-<nav>
-  <a href="index.html" class="nav-logo">
-    <img src="assets/img/logov5.png" alt="Compiled Thoughts">
-    compiled<span>.</span>thoughts
-  </a>
-  <ul class="nav-links">
-    <li><a href="index.html" class="active">Home</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="blog/index.html">Blog</a></li>
-  </ul>
-</nav>
+  <main>
+    <section class="hero">
+      <div class="hero-inner">
+        <p class="hero-eyebrow">The Mission</p>
+        <h1>Run the Biggest Model Your Hardware Can Handle.</h1>
+        <p class="hero-sub">Open-weight AI is advancing fast. This blog is a public build log &mdash; pushing to run the largest possible open-weight models on consumer hardware, one click. No cloud. No API keys. Just your machine.</p>
+        <a href="/blog/" class="hero-cta">Follow the build &rarr;</a>
+      </div>
+    </section>
 
-<div class="hero">
-  <div class="hero-bg-text">compiled</div>
-  <div class="hero-tag">The Mission</div>
-  <h1>Run the <em>largest</em> possible <em>frontier AI</em> model <em>locally</em>  — <em>without</em> the complexity.</h1>
-  <p class="hero-desc">
-    The goal is simple: run the biggest open-weight model possible at good tokens per second, entirely on local or consumer hardware  hardware. No cloud. No API keys. Just your machine.
-  </p>
-  <div class="hero-cta-group">
-    <a href="blog/index.html" class="hero-cta">Follow the build &rarr;</a>
-    <a href="https://github.com/compiledthoughts" target="_blank" class="hero-github">
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      GitHub
-    </a>
-  </div>
+    <section class="latest-posts">
+      <div class="latest-inner">
+        <p class="section-heading">Latest Posts</p>
 
-  
-  <div class="hero-stats">
-    <div class="hero-stats-label">Progress &middot; Qwen3.6 35B-A3B &middot; RTX 5060 Ti</div>
-    <div class="hero-stats-nums">
-      <div class="stat-step best">
-        <div class="stat-step-num">64<span> t/s</span></div>
-        <div class="stat-step-mid">
-          <div class="stat-step-label">+ MTP &middot; 131k ctx</div>
-          <div class="stat-bar"><div class="stat-bar-fill" style="width:100%"></div></div>
+        <div class="post-item">
+          <h2><a href="/blog/compiledthoughts_blog_04_terminology.html">Terms You'll See in Every Experiment</a></h2>
+          <p>A clean glossary for the model internals behind inferedThoughts: tokens, layers, GatedDeltaNet, attention, KV cache, MoE, experts, tensors, GGUF and quantization.</p>
+          <p class="post-meta">29 Aug 2026</p>
         </div>
-        <a class="stat-step-link" href="blog/compiledthoughts_blog_03_kv.html">Experiment 03 &rarr;</a>
-      </div>
-      <div class="stat-step">
-        <div class="stat-step-num">57<span> t/s</span></div>
-        <div class="stat-step-mid">
-          <div class="stat-step-label">llama-server &middot; LM cache</div>
-          <div class="stat-bar"><div class="stat-bar-fill" style="width:89%"></div></div>
+
+        <div class="post-item">
+          <h2><a href="/blog/compiledthoughts_blog_03_kv.html">Reaching 64 t/s: LM Cache, KV Checkpointing, and MTP</a></h2>
+          <p>The proxy showed 57 TPS, but llama-cli gave 36. Same hardware. This post answers why &mdash; then adds MTP to reach 64 TPS at 131k context.</p>
+          <p class="post-meta">16 May 2026</p>
         </div>
-        <a class="stat-step-link" href="blog/compiledthoughts_blog_02_proxy.html">Experiment 02 &rarr;</a>
-      </div>
-      <div class="stat-step">
-        <div class="stat-step-num">36<span> t/s</span></div>
-        <div class="stat-step-mid">
-          <div class="stat-step-label">llama-cli &middot; -ncmoe 11</div>
-          <div class="stat-bar"><div class="stat-bar-fill" style="width:56%"></div></div>
+
+        <div class="post-item">
+          <h2><a href="/blog/compiledthoughts_blog_02_proxy.html">Using Claude Code and Cline with a Local LLM</a></h2>
+          <p>A 600-line proxy bridges Anthropic's API and llama-server &mdash; with lifetime metrics tracking and a live dashboard.</p>
+          <p class="post-meta">12 May 2026</p>
         </div>
-        <a class="stat-step-link" href="blog/anantamatrix_blog_01.html">Experiment 01 &rarr;</a>
-      </div>
-      <div class="stat-step">
-        <div class="stat-step-num">18<span> t/s</span></div>
-        <div class="stat-step-mid">
-          <div class="stat-step-label">Ollama &mdash; default settings</div>
-          <div class="stat-bar"><div class="stat-bar-fill" style="width:28%"></div></div>
+
+        <div class="post-item">
+          <h2><a href="/blog/anantamatrix_blog_01.html">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</a></h2>
+          <p>Ollama leaves 2.2&times; performance on the table for MoE models &mdash; here's how to recover it.</p>
+          <p class="post-meta">9 May 2026</p>
         </div>
-        <span class="stat-step-noop">baseline</span>
-      </div>
-    </div>
-  </div>
 
-  <div class="scroll-hint">scroll</div>
-</div>
+        <div class="post-item">
+          <h2><a href="/blog/change-ollama-model-dir.html">Change Default Directory for Ollama</a></h2>
+          <p>How to change the default directory for Ollama models on Windows using an environment variable.</p>
+          <p class="post-meta">25 May 2025</p>
+        </div>
 
-<section id="posts">
-  <div class="section-header">
-    <span class="section-title">Latest Posts</span>
-    <span class="section-count">5 published</span>
-  </div>
+        <div class="post-item">
+          <h2><a href="/blog/what-are-llms.html">What Are LLMs (Large Language Models)?</a></h2>
+          <p>A clear breakdown of what large language models are, how they work, and why they matter.</p>
+          <p class="post-meta">25 May 2025</p>
+        </div>
 
-  <a class="post-item" href="blog/compiledthoughts_blog_03_kv.html">
-    <div class="post-date">16 May 2026</div>
-    <div class="post-body">
-      <div class="post-tags">
-        <span class="tag accent">Experiment 03</span>
-        <span class="tag">LM Cache</span>
-        <span class="tag">MTP</span>
-        <span class="tag">llama.cpp</span>
+        <a href="/blog/" class="view-all">View all posts &rarr;</a>
       </div>
-      <div class="post-title">Reaching 64 t/s: LM Cache, KV Checkpointing, and MTP</div>
-      <p class="post-excerpt">The proxy showed 57 TPS, but llama-cli gave 36. Same hardware. This post answers why — then adds MTP to reach 64 TPS at 131k context.</p>
-      <div class="post-meta">
-        <span class="post-read">10 min read</span>
-      </div>
-    </div>
-    <div class="post-arrow">&rarr;</div>
-  </a>
+    </section>
+  </main>
 
-  <a class="post-item" href="blog/anantamatrix_blog_01.html">
-    <div class="post-date">9 May 2026</div>
-    <div class="post-body">
-      <div class="post-tags">
-        <span class="tag accent">Experiment 01</span>
-        <span class="tag">MoE</span>
-        <span class="tag">llama.cpp</span>
-        <span class="tag">RTX 5060 Ti</span>
-      </div>
-      <div class="post-title">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</div>
-      <p class="post-excerpt">Ollama leaves 2.2&times; performance on the table for MoE models. A deep dive into memory bandwidth hierarchy and why GPU utilization % is a misleading metric.</p>
-      <div class="post-meta">
-        <span class="post-read">8 min read</span>
-      </div>
-    </div>
-    <div class="post-arrow">&rarr;</div>
-  </a>
-
-  <a class="post-item" href="blog/compiledthoughts_blog_02_proxy.html">
-    <div class="post-date">12 May 2026</div>
-    <div class="post-body">
-      <div class="post-tags">
-        <span class="tag accent">Experiment 02</span>
-        <span class="tag">Claude Code</span>
-        <span class="tag">Cline</span>
-        <span class="tag">Proxy</span>
-      </div>
-      <div class="post-title">Using Claude Code and Cline with a Local LLM</div>
-      <p class="post-excerpt">A 600-line proxy bridges Anthropic's API and llama-server — with lifetime metrics tracking and a live dashboard.</p>
-      <div class="post-meta">
-        <span class="post-read">6 min read</span>
-      </div>
-    </div>
-    <div class="post-arrow">&rarr;</div>
-  </a>
-
-  <a class="post-item" href="blog/change-ollama-model-dir.html">
-    <div class="post-date">25 May 2025</div>
-    <div class="post-body">
-      <div class="post-tags">
-        <span class="tag accent">Ollama</span>
-        <span class="tag">Windows</span>
-        <span class="tag">Setup</span>
-      </div>
-      <div class="post-title">Change Default Directory for Ollama</div>
-      <p class="post-excerpt">How to change the default directory for Ollama models on Windows using an environment variable.</p>
-      <div class="post-meta">
-        <span class="post-read">3 min read</span>
-      </div>
-    </div>
-    <div class="post-arrow">&rarr;</div>
-  </a>
-
-  <a class="post-item" href="blog/what-are-llms.html">
-    <div class="post-date">25 May 2025</div>
-    <div class="post-body">
-      <div class="post-tags">
-        <span class="tag accent">Explainer</span>
-        <span class="tag">LLMs</span>
-        <span class="tag">AI</span>
-      </div>
-      <div class="post-title">What Are LLMs (Large Language Models)?</div>
-      <p class="post-excerpt">A clear breakdown of what large language models are, how they work, and why they matter for local inference.</p>
-      <div class="post-meta">
-        <span class="post-read">5 min read</span>
-      </div>
-    </div>
-    <div class="post-arrow">&rarr;</div>
-  </a>
-</section>
-
-<section id="about">
-  <div class="about-strip">
-    <div class="about-left">
-      <div class="about-heading">What this is</div>
-      <p class="about-body">
-        Compiled Thoughts is a public build log with one goal: run the biggest open-weight model possible at good tokens per second, entirely on local hardware.
-      </p>
-      <p class="about-body">
-        Open-weight models are getting bigger and better fast. But actually running them — on your own machine, without cloud APIs or expensive subscriptions — is still harder than it should be. This blog is about closing that gap.
-      </p>
-      <p class="about-body">
-        Every post is a step in the build: benchmarks, tooling, configuration, failures, and breakthroughs. All numbers are real and measured.
-      </p>
-    </div>
-    <div class="about-right">
-      <div class="about-heading">More posts</div>
-      <p class="about-body">Browse all articles, or follow the build from the beginning.</p>
-      <a href="blog/index.html" style="display:inline-block;margin-top:1rem;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);text-decoration:none;">View all posts &rarr;</a>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <span>compiledthoughts.dev</span>
-  <span>&copy; 2026 Compiled Thoughts</span>
-  <a href="about.html" style="color:var(--text3);text-decoration:none;">about</a>
-</footer>
-
+  <footer>
+    <span>&copy; 2026 Compiled Thoughts</span>
+  </footer>
 </body>
 </html>
