@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms You'll See in <em>Every</em> Experiment — Compiled Thoughts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital,wght@0,9..144,300;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f6f7f9; --bg3: #eef0f3;
+    --border: #e3e6ea;
+    --text: #14161a; --text2: #565c66; --text3: #6b7280;
+    --accent: #4f46e5; --accent2: #0d9488;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 17px; line-height: 1.75; font-weight: 300; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.88); backdrop-filter: blur(16px); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none; }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); text-decoration: none; }
+  .container { max-width: 760px; margin: 0 auto; padding: 0 2rem; }
+  .hero { padding: 8rem 0 3rem; border-bottom: 1px solid var(--border); }
+  .series-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  .series-tag::before { content: ''; width: 20px; height: 1px; background: var(--accent); }
+  h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; font-weight: 300; margin-bottom: 1.5rem; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .hero-meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .hero-summary { font-size: 1.05rem; color: var(--text2); border-left: 2px solid var(--border); padding-left: 1.5rem; margin-top: 2rem; line-height: 1.7; }
+  .content { padding: 3rem 0 6rem; }
+  h2 { font-family: 'Instrument Serif', serif; font-size: 1.7rem; font-weight: 300; margin: 3.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  h3 { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; margin: 2rem 0 0.75rem; }
+  p { margin-bottom: 1.25rem; color: var(--text2); }
+  strong { color: var(--text); font-weight: 500; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.7; color: #2b2e34; }
+  code { font-family: 'DM Mono', monospace; font-size: 13px; background: var(--bg3); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; color: var(--accent2); }
+  pre code { background: none; border: none; padding: 0; color: inherit; }
+  .callout { border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; background: var(--bg2); }
+  .callout.good { border-color: rgba(79,70,229,0.3); background: rgba(79,70,229,0.04); }
+  .callout-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; color: var(--accent); }
+  .callout p { margin: 0; font-size: 15px; }
+  .insight { border-left: 2px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: rgba(79,70,229,0.03); }
+  .insight p { margin: 0; color: var(--text); font-size: 15px; line-height: 1.65; }
+  table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; }
+  th { text-align: left; padding: 0.5rem 1rem; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+  td { padding: 0.6rem 1rem; color: var(--text2); border-bottom: 1px solid rgba(226,229,234,0.5); }
+  .next-post { border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-top: 4rem; background: var(--bg2); }
+  .next-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
+  .next-title { font-family: 'Instrument Serif', serif; font-size: 1.4rem; font-weight: 300; margin-bottom: 0.75rem; }
+  .next-desc { font-size: 14px; color: var(--text3); margin: 0; }
+  footer { border-top: 1px solid var(--border); padding: 2rem 2.5rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  @media (max-width: 600px) { .hero { padding: 6rem 0 2rem; } h1 { font-size: 1.8rem; } .hero-meta { flex-direction: column; gap: 0.5rem; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">compiled<span>.</span>thoughts</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Posts</a></li>
+    <li><a href="https://github.com/compiledthoughts" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
+
+<div class="container">
+  <div class="hero">
+    <div class="series-tag">Glossary · Model Internals</div>
+    <h1>Terms You'll See in <em>Every</em> Experiment</h1>
+    <div class="hero-meta">
+      <span>August 29, 2026</span>
+      <span>Qwen3.6 35B-A3B &middot; GGUF</span>
+      <span>RTX 5060 Ti</span>
+    </div>
+    <div class="hero-summary">
+      A clean glossary for the model internals behind inferedThoughts: tokens, layers, GatedDeltaNet, attention, KV cache, MoE, experts, tensors, GGUF and quantization.
+    </div>
+  </div>
+
+  <div class="content">
+
+    <h2>The Model</h2>
+
+    <p>Qwen3.6 35B-A3B turns text into tokens, then repeatedly transforms those tokens through <strong>40 layers</strong> before producing probabilities for the next token.</p>
+
+    <pre><code>text
+  ↓
+tokenizer
+  ↓
+token IDs
+  ↓
+embedding
+  ↓
+40 layers
+  ↓
+LM head
+  ↓
+logits
+  ↓
+next token</code></pre>
+
+    <h2 id="token">Token</h2>
+
+    <p>A token is a piece of text. It is not necessarily a whole word.</p>
+
+    <pre><code>"Hello world" → ["Hello", " world"]  = 2 tokens
+"transformer" → ["transform", "er"]    = 2 tokens
+"I"            → ["I"]                  = 1 token</code></pre>
+
+    <p>The model vocabulary contains <strong>248,320</strong> token IDs.</p>
+
+    <h2 id="layer">Layer</h2>
+
+    <p>Qwen3.6 35B-A3B has <strong>40 layers</strong>. During autoregressive decoding, each newly generated token passes through all 40 layers in order.</p>
+
+    <pre><code>Token
+  ↓
+Layer 0
+  ↓
+Layer 1
+  ↓
+...
+  ↓
+Layer 39
+  ↓
+next-token logits</code></pre>
+
+    <p>The architecture is organized as <strong>10 groups of four layers</strong>: three GatedDeltaNet layers followed by one attention layer.</p>
+
+    <h2 id="deltanet">GatedDeltaNet</h2>
+
+    <p>GatedDeltaNet is a recurrent-style sequence-mixing mechanism. Instead of standard attention over the full history, it maintains a compact state that is updated as tokens arrive.</p>
+
+    <pre><code>new token
+   │
+   ▼
+GatedDeltaNet
+   │
+   ├── read recurrent state
+   ├── compute update
+   └── write new state
+   │
+   ▼
+next layer</code></pre>
+
+    <h2 id="attention">Attention</h2>
+
+    <p>The attention layers let the current token retrieve information from previous tokens. During decoding, each attention layer maintains its own <strong>KV cache</strong>.</p>
+
+    <pre><code>current token
+     │
+     ├── Q ───────────────┐
+     │                    │
+     ├── K ──► KV cache ──┤
+     │                    │
+     └── V ──► KV cache ──┘
+              │
+              ▼
+          attention
+              │
+              ▼
+          new hidden state</code></pre>
+
+    <p>The important distinction: the entire KV cache is <strong>not</strong> passed through all 40 layers again. Each attention layer reads its own cached keys and values and appends the new token's K/V.</p>
+
+    <h2 id="moe">MoE — Mixture of Experts</h2>
+
+    <p>The feed-forward part is a <strong>Mixture of Experts</strong>. Each MoE layer contains <strong>256 routed experts</strong>. A router scores the experts for the current token and selects <strong>8 routed experts</strong>.</p>
+
+    <pre><code>hidden state
+     │
+     ▼
+   Router
+     │
+     ├── Expert 12  ──┐
+     ├── Expert 47  ──┤
+     ├── Expert 89  ──┤
+     ├── ...          ├──► combine
+     └── 8 total ─────┘
+
+256 experts exist.
+Only 8 routed experts are selected for this token.</code></pre>
+
+    <h3 id="expert">Expert</h3>
+
+    <p>Each expert is a small feed-forward network with three learned weight matrices.</p>
+
+    <pre><code>hidden (2048)
+     │
+     ├── gate projection ──┐
+     │                     │
+     ├── up projection ────┤ → gated activation
+     │                     │
+     └─────────────────────┘
+                    │
+                    ▼
+              down projection
+                    │
+                    ▼
+             expert output</code></pre>
+
+    <p>For the configuration we're using, an expert has an intermediate dimension of <strong>512</strong>, so its three matrices contain roughly <strong>3.1M parameters</strong>.</p>
+
+    <h2 id="tensor">Tensor</h2>
+
+    <p>A tensor is simply a multi-dimensional array of numbers. Model weights, hidden states, router outputs and caches are represented as tensors.</p>
+
+    <pre><code>1D: [1.2, 3.4, 5.6]
+2D: [[1.2, 3.4], [5.6, 7.8]]
+3D: [[[...], [...]], [[...], [...]]]</code></pre>
+
+    <h2 id="weight">Weight</h2>
+
+    <p>A weight is a learned number. During inference, weights are read but not updated.</p>
+
+    <h2 id="gguf">GGUF</h2>
+
+    <p>GGUF is the model container we will initially support in <strong>inferedThoughts</strong>. It contains model metadata plus tensor metadata and the binary tensor data.</p>
+
+    <pre><code>GGUF
+├── header
+├── metadata
+├── tensor directory
+│   ├── name
+│   ├── shape
+│   ├── type
+│   └── offset
+└── tensor data</code></pre>
+
+    <h2 id="quantization">Quantization</h2>
+
+    <p>Quantization stores weights using fewer bits than their original floating-point representation. This reduces the amount of data required to store and move the model, with some approximation error.</p>
+
+    <p>Our current GGUF uses <strong>IQ4_XS</strong> and <strong>Q5_K</strong> tensor types.</p>
+
+    <div class="insight">
+      <p><strong>The mental model:</strong> a token carries a hidden state through 40 layers. At MoE layers, the router selects a small subset of experts. At attention layers, the token reads that layer's KV cache. This is the computation we need to reproduce in inferedThoughts.</p>
+    </div>
+
+    <div class="next-post">
+      <div class="next-label">Next — inferedThoughts</div>
+      <div class="next-title">One Token Through Qwen3.6</div>
+      <p class="next-desc">The actual tensors and operations involved when a single token moves through one layer.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>compiledthoughts.dev · Local AI Infrastructure Research · 2026</footer>
+
+</body>
+</html>
