@@ -1,162 +1,248 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terms You'll See in <em>Every</em> Experiment — Compiled Thoughts</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital,wght@0,9..144,300;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glossary: Model Architecture Terms — Compiled Thoughts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Instrument+Serif:ital,wght@0,9..144,300;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#fff;--bg2:#f6f7f9;--bg3:#eef0f3;--border:#e3e6ea;--text:#14161a;--text2:#565c66;--text3:#6b7280;--accent:#4f46e5;--accent2:#0d9488}
-html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:17px;line-height:1.75;font-weight:300}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.1rem 2.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(255,255,255,.88);backdrop-filter:blur(16px)}
-.nav-logo{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--text);text-decoration:none}.nav-logo span{color:var(--accent)}
-.nav-links{display:flex;gap:2rem;list-style:none}.nav-links a{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);text-decoration:none}
-.container{max-width:760px;margin:0 auto;padding:0 2rem}.hero{padding:8rem 0 3rem;border-bottom:1px solid var(--border)}
-.series-tag{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:1.5rem;display:flex;align-items:center;gap:8px}.series-tag:before{content:'';width:20px;height:1px;background:var(--accent)}
-h1{font-family:'Instrument Serif',serif;font-size:clamp(2rem,5vw,3rem);line-height:1.15;font-weight:300;margin-bottom:1.5rem}h1 em{font-style:italic;color:var(--accent)}
-.hero-meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--text3);display:flex;gap:2rem;margin-bottom:2rem;flex-wrap:wrap}.hero-summary{font-size:1.05rem;color:var(--text2);border-left:2px solid var(--border);padding-left:1.5rem;margin-top:2rem;line-height:1.7}
-.content{padding:3rem 0 6rem}h2{font-family:'Instrument Serif',serif;font-size:1.7rem;font-weight:300;margin:3.5rem 0 1rem;padding-top:1rem;border-top:1px solid var(--border)}
-h3{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent2);letter-spacing:.08em;text-transform:uppercase;margin:2rem 0 .75rem}p{margin-bottom:1.25rem;color:var(--text2)}strong{color:var(--text);font-weight:500}
-pre{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:1.25rem 1.5rem;overflow-x:auto;margin:1.5rem 0;font-family:'DM Mono',monospace;font-size:13px;line-height:1.7;color:#2b2e34}
-code{font-family:'DM Mono',monospace;font-size:13px;background:var(--bg3);border:1px solid var(--border);padding:1px 6px;border-radius:3px;color:var(--accent2)}pre code{background:none;border:none;padding:0;color:inherit}
-.callout{border:1px solid var(--border);border-radius:8px;padding:1.25rem 1.5rem;margin:1.5rem 0;background:var(--bg2)}.callout.good{border-color:rgba(79,70,229,.3);background:rgba(79,70,229,.04)}
-.callout-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem;color:var(--accent)}.callout p{margin:0;font-size:15px}
-.insight{border-left:2px solid var(--accent);padding:1rem 1.5rem;margin:2rem 0;background:rgba(79,70,229,.03)}.insight p{margin:0;color:var(--text);font-size:15px;line-height:1.65}
-table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-family:'DM Mono',monospace;font-size:13px}th{text-align:left;padding:.5rem 1rem;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border)}td{padding:.6rem 1rem;color:var(--text2);border-bottom:1px solid rgba(226,229,234,.5)}
-.next-post{border:1px solid var(--border);border-radius:8px;padding:2rem;margin-top:4rem;background:var(--bg2)}.next-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.75rem}.next-title{font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:300;margin-bottom:.75rem}.next-desc{font-size:14px;color:var(--text3);margin:0}
-footer{border-top:1px solid var(--border);padding:2rem 2.5rem;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--text3)}
-@media(max-width:600px){.hero{padding:6rem 0 2rem}h1{font-size:1.8rem}.hero-meta{flex-direction:column;gap:.5rem}}
-</style></head><body>
-<nav><a href="index.html" class="nav-logo">compiled<span>.</span>thoughts</a><ul class="nav-links"><li><a href="index.html">Posts</a></li><li><a href="https://github.com/compiledthoughts" target="_blank">GitHub</a></li></ul></nav>
-<div class="container"><div class="hero"><div class="series-tag">Glossary · Model Internals</div><h1>Terms You'll See in <em>Every</em> Experiment</h1><div class="hero-meta"><span>August 29, 2026</span><span>Qwen3.6 35B-A3B · GGUF</span><span>RTX 5060 Ti</span></div><div class="hero-summary">A clean glossary for the model internals behind inferedThoughts: tokens, layers, GatedDeltaNet, attention, KV cache, MoE, experts, tensors, GGUF and quantization.</div></div>
-<div class="content">
-<h2>The Model</h2>
-<p>Qwen3.6 35B-A3B turns text into tokens, then repeatedly transforms those tokens through <strong>40 layers</strong> before producing probabilities for the next token.</p>
-<pre><code>text
-  ↓
-tokenizer
-  ↓
-token IDs
-  ↓
-embedding
-  ↓
-40 layers
-  ↓
-LM head
-  ↓
-logits
-  ↓
-next token</code></pre>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f6f7f9; --bg3: #eef0f3;
+    --border: #e3e6ea; --border2: #d3d7de;
+    --text: #14161a; --text2: #565c66; --text3: #6b7280;
+    --accent: #4f46e5; --accent2: #0d9488; --red: #dc2626; --blue: #2563eb; --amber: #b45309;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 17px; line-height: 1.75; font-weight: 300; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 1.1rem 2.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.88); backdrop-filter: blur(16px); }
+  .nav-logo { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--text); text-decoration: none; }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); text-decoration: none; }
+  .nav-links a:hover { color: var(--text2); }
+  .container { max-width: 760px; margin: 0 auto; padding: 0 2rem; }
+  .hero { padding: 8rem 0 3rem; border-bottom: 1px solid var(--border); }
+  .series-tag { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+  .series-tag::before { content: ''; width: 20px; height: 1px; background: var(--accent); }
+  h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; font-weight: 300; margin-bottom: 1.5rem; }
+  h1 em { font-style: italic; color: var(--accent); }
+  .hero-meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); display: flex; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .hero-summary { font-size: 1.05rem; color: var(--text2); border-left: 2px solid var(--border); padding-left: 1.5rem; margin-top: 2rem; line-height: 1.7; }
+  .content { padding: 3rem 0 6rem; }
+  h2 { font-family: 'Instrument Serif', serif; font-size: 1.7rem; font-weight: 300; margin: 3.5rem 0 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+  h3 { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--accent2); letter-spacing: 0.08em; text-transform: uppercase; margin: 2rem 0 0.75rem; }
+  p { margin-bottom: 1.25rem; color: var(--text2); }
+  strong { color: var(--text); font-weight: 500; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  pre { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem 1.5rem; overflow-x: auto; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; line-height: 1.7; color: #2b2e34; }
+  code { font-family: 'DM Mono', monospace; font-size: 13px; background: var(--bg3); border: 1px solid var(--border); padding: 1px 6px; border-radius: 3px; color: var(--accent2); }
+  pre code { background: none; border: none; padding: 0; color: inherit; }
+  .callout { border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem 1.5rem; margin: 1.5rem 0; background: var(--bg2); }
+  .callout.good { border-color: rgba(79,70,229,0.3); background: rgba(79,70,229,0.04); }
+  .callout.bad { border-color: rgba(220,38,38,0.3); background: rgba(220,38,38,0.04); }
+  .callout-label { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+  .callout.good .callout-label { color: var(--accent); }
+  .callout.bad .callout-label { color: var(--red); }
+  .callout p { margin: 0; font-size: 15px; }
+  .insight { border-left: 2px solid var(--accent); padding: 1rem 1.5rem; margin: 2rem 0; background: rgba(79,70,229,0.03); }
+  .insight p { margin: 0; color: var(--text); font-size: 15px; line-height: 1.65; }
+  .big-stat { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .stat { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; min-width: 120px; }
+  .stat-num { font-family: 'DM Mono', monospace; font-size: 2rem; font-weight: 500; line-height: 1; display: block; }
+  .stat-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; display: block; }
+  .chart-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+  .chart-title { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem; }
+  table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-family: 'DM Mono', monospace; font-size: 13px; }
+  th { text-align: left; padding: 0.5rem 1rem; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+  td { padding: 0.6rem 1rem; color: var(--text2); border-bottom: 1px solid rgba(226,229,234,0.5); }
+  tr.hl td { color: var(--text); background: rgba(79,70,229,0.04); }
+  .progress-stack { display: flex; flex-direction: column; gap: 10px; margin: 1.5rem 0; }
+  .progress-row { display: flex; align-items: center; gap: 12px; }
+  .progress-label { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3); width: 210px; flex-shrink: 0; }
+  .progress-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; }
+  .progress-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text); width: 60px; text-align: right; }
+  .next-post { border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-top: 4rem; background: var(--bg2); }
+  .next-label { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
+  .next-title { font-family: 'Instrument Serif', serif; font-size: 1.4rem; font-weight: 300; color: var(--text); margin-bottom: 0.75rem; }
+  .next-desc { font-size: 14px; color: var(--text3); margin: 0; }
+  footer { border-top: 1px solid var(--border); padding: 2rem 2.5rem; text-align: center; font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  @media (max-width: 600px) { .hero { padding: 6rem 0 2rem; } h1 { font-size: 1.8rem; } .hero-meta { flex-direction: column; gap: 0.5rem; } .big-stat { flex-direction: column; } .progress-label { width: 140px; font-size: 11px; } }
+</style>
+</head>
+<body>
 
-<h2 id="token">Token</h2>
-<p>A token is a piece of text. It is not necessarily a whole word.</p>
-<pre><code>"Hello world" → ["Hello", " world"]  = 2 tokens
-"transformer" → ["transform", "er"]    = 2 tokens
-"I"            → ["I"]                  = 1 token</code></pre>
-<p>The model vocabulary contains <strong>248,320</strong> token IDs.</p>
+<nav>
+  <a href="index.html" class="nav-logo">compiled<span>.</span>thoughts</a>
+  <ul class="nav-links">
+    <li><a href="index.html">Posts</a></li>
+    <li><a href="https://github.com/compiledthoughts" target="_blank">GitHub</a></li>
+  </ul>
+</nav>
 
-<h2 id="layer">Layer</h2>
-<p>Qwen3.6 35B-A3B has <strong>40 layers</strong>. During autoregressive decoding, each newly generated token passes through all 40 layers in order.</p>
-<pre><code>Token
-  ↓
-Layer 0
-  ↓
-Layer 1
-  ↓
+<div class="container">
+  <div class="hero">
+    <div class="series-tag">Glossary · Model Internals</div>
+    <h1>Terms You'll See in <em>Every</em> Experiment</h1>
+    <div class="hero-meta">
+      <span>May 25, 2026</span>
+      <span>Qwen3.6 35B-A3B · 19.4 GB GGUF</span>
+      <span>RTX 5060 Ti</span>
+    </div>
+    <div class="hero-summary">
+      A clean glossary for the terms that appear in every experiment post: token, block, MoE, attention, expert, weight, tensor, GGUF, quantization. Starting from zero. No assumed knowledge.
+    </div>
+  </div>
+
+  <div class="content">
+
+    <h2>The Model</h2>
+
+    <p>The model takes a <a href="#token">token</a> as input. Produces the next token as output. Does this one token at a time.</p>
+
+    <h2 id="token">Token</h2>
+
+    <p>A token is a piece of text. Not always a whole word.</p>
+
+    <pre><code>"Hello world" → ["Hello", " world"]       = 2 tokens
+"transformer" → ["transform", "er"]       = 2 tokens
+"I" → ["I"]                               = 1 token</code></pre>
+
+    <p><strong>Qwen3.6 35B</strong> knows <strong>248,320</strong> different tokens.</p>
+
+    <h2 id="block">Block</h2>
+
+    <p>The model processes each token through a series of <strong>identical</strong> processing stages. Each stage is called a <strong>block</strong> (also called a <em>layer</em> — same thing).</p>
+
+    <p>Qwen3.6 35B has <strong>40 blocks</strong>. Every token passes through all 40 blocks in order.</p>
+
+    <pre><code>Token → Block 0 → Block 1 → Block 2 → ... → Block 39 → Next token predicted</code></pre>
+
+    <p>In llama.cpp / GGUF files, blocks are named:</p>
+
+    <pre><code>blk.0   = Block 0 (first)
+blk.1   = Block 1
 ...
-  ↓
-Layer 39
-  ↓
-next-token logits</code></pre>
-<p>The architecture is organized as <strong>10 groups of four layers</strong>: three GatedDeltaNet layers followed by one attention layer.</p>
+blk.39  = Block 39 (last)</code></pre>
 
-<h2 id="deltanet">GatedDeltaNet</h2>
-<p>GatedDeltaNet is a recurrent-style sequence-mixing mechanism. Instead of standard attention over the full history, it maintains a compact state that is updated as tokens arrive.</p>
-<pre><code>new token
-   │
-   ▼
-GatedDeltaNet
-   │
-   ├── read recurrent state
-   ├── compute update
-   └── write new state
-   │
-   ▼
-next layer</code></pre>
+    <h2>Inside Each Block — Two Things</h2>
 
-<h2 id="attention">Attention</h2>
-<p>The attention layers let the current token retrieve information from previous tokens. During decoding, each attention layer maintains its own <strong>KV cache</strong>.</p>
-<pre><code>current token
-     │
-     ├── Q ───────────────┐
-     │                    │
-     ├── K ──► KV cache ──┤
-     │                    │
-     └── V ──► KV cache ──┘
-              │
-              ▼
-          attention
-              │
-              ▼
-          new hidden state</code></pre>
-<p>The important distinction: the entire KV cache is <strong>not</strong> passed through all 40 layers again. Each attention layer reads its own cached keys and values and appends the new token's K/V.</p>
+    <pre><code>Block N
+├── Attention    ← token looks at all previous tokens
+└── MoE          ← token gets processed by specialists</code></pre>
 
-<h2 id="moe">MoE — Mixture of Experts</h2>
-<p>The feed-forward part is a <strong>Mixture of Experts</strong>. Each MoE layer contains <strong>256 routed experts</strong>. A router scores the experts for the current token and selects <strong>8 routed experts</strong>.</p>
-<pre><code>hidden state
-     │
-     ▼
-   Router
-     │
-     ├── Expert 12  ──┐
-     ├── Expert 47  ──┤
-     ├── Expert 89  ──┤
-     ├── ...          ├──► combine
-     └── 8 total ─────┘
+    <h2 id="attention">Attention</h2>
 
-256 experts exist.
-Only 8 routed experts are selected for this token.</code></pre>
+    <p>Let's the current token "look back" at everything said before. Produces the <strong>KV cache</strong> (Keys and Values — the memory of what was said).</p>
 
-<h3 id="expert">Expert</h3>
-<p>Each expert is a small feed-forward network with three learned weight matrices.</p>
-<pre><code>hidden (2048)
-     │
-     ├── gate projection ──┐
-     │                     │
-     ├── up projection ────┤ → gated activation
-     │                     │
-     └─────────────────────┘
-                    │
-                    ▼
-              down projection
-                    │
-                    ▼
-             expert output</code></pre>
-<p>For the configuration we're using, an expert has an intermediate dimension of <strong>512</strong>, so its three matrices contain roughly <strong>3.1M parameters</strong>.</p>
+    <p>Every token. Every block. Always runs. Cannot be skipped.</p>
 
-<h2 id="tensor">Tensor</h2>
-<p>A tensor is simply a multi-dimensional array of numbers. Model weights, hidden states, router outputs and caches are represented as tensors.</p>
-<pre><code>1D: [1.2, 3.4, 5.6]
-2D: [[1.2, 3.4], [5.6, 7.8]]
-3D: [[[...], [...]], [[...], [...]]]</code></pre>
+    <h2 id="moe">MoE (Mixture of Experts)</h2>
 
-<h2 id="weight">Weight</h2>
-<p>A weight is a learned number. During inference, weights are read but not updated.</p>
+    <p>Instead of one big calculator — <strong>256</strong> small specialist calculators called <strong>experts</strong>.</p>
 
-<h2 id="gguf">GGUF</h2>
-<p>GGUF is the model container we will initially support in <strong>inferedThoughts</strong>. It contains model metadata plus tensor metadata and the binary tensor data.</p>
-<pre><code>GGUF
-├── header
-├── metadata
-├── tensor directory
-│   ├── name
-│   ├── shape
-│   ├── type
-│   └── offset
-└── tensor data</code></pre>
+    <p>A <strong>router</strong> decides which 8 experts are most relevant for this token. Only those 8 run. The other 248 do nothing.</p>
 
-<h2 id="quantization">Quantization</h2>
-<p>Quantization stores weights using fewer bits than their original floating-point representation. This reduces the amount of data required to store and move the model, with some approximation error.</p>
-<p>Our current GGUF uses <strong>IQ4_XS</strong> and <strong>Q5_K</strong> tensor types.</p>
+    <pre><code>Block 0 MoE:
+  Router: "token is about Python code → use experts 12, 47, 89, 103, 156, 201, 234, 247"
+  Expert 12:  runs → produces output
+  Expert 47:  runs → produces output
+  ...8 total...
+  Experts 0-11, 13-46, 48-88...: do nothing this token</code></pre>
 
-<div class="insight"><p><strong>The mental model:</strong> a token carries a hidden state through 40 layers. At MoE layers, the router selects a small subset of experts. At attention layers, the token reads that layer's KV cache. This is the computation we need to reproduce in inferedThoughts.</p></div>
+    <h3 id="expert">Expert</h3>
 
-<div class="next-post"><div class="next-label">Next — inferedThoughts</div><div class="next-title">One Token Through Qwen3.6</div><p class="next-desc">The actual tensors and operations involved when a single token moves through one layer.</p></div>
-</div></div><footer>compiledthoughts.dev · Local AI Infrastructure Research · 2026</footer></body></html>
+    <p>One specialist calculator. Has three weight matrices:</p>
+
+    <pre><code>Expert 47 in Block 0:
+  gate_proj  ← first transformation
+  up_proj    ← second transformation
+  down_proj  ← final transformation</code></pre>
+
+    <p>Each matrix is a 2D grid of numbers the model learned during training.</p>
+
+    <h2 id="weight">Weight</h2>
+
+    <p>A number the model learned during training. <strong>Weights don't change during inference.</strong> They're stored in the GGUF file on disk.</p>
+
+    <h2 id="tensor">Tensor</h2>
+
+    <p>A tensor is just a multi-dimensional array of weights.</p>
+
+    <pre><code>1D tensor (vector):   [1.2, 3.4, 5.6, 7.8]
+2D tensor (matrix):   [[1.2, 3.4], [5.6, 7.8]]
+3D tensor:            [[[...], [...]], [[...], [...]]]</code></pre>
+
+    <p>In your model, each expert has 3 tensors (gate, up, down).</p>
+
+    <h3 id="merged">Merged Tensor</h3>
+
+    <p>In your GGUF file, all 256 experts in a block are stored together in one big tensor instead of separately.</p>
+
+    <pre><code>blk.0.ffn_gate_exps.weight
+= one tensor containing gate_proj for ALL 256 experts
+Shape: [256, 512, 2048]
+        ^^^  ^^^  ^^^^
+        256 experts
+             512 FFN hidden dim
+                  2048 model dim</code></pre>
+
+    <p>To get expert 47's gate weights → slice row 47:</p>
+
+    <pre><code>blk.0.ffn_gate_exps.weight[47, :, :]</code></pre>
+
+    <h2 id="gguf">GGUF</h2>
+
+    <p>The file format that stores the model. Contains:</p>
+    <ul>
+      <li>Metadata (model name, architecture, hyperparameters)</li>
+      <li>All tensors stored sequentially as binary data</li>
+    </ul>
+
+    <p>Your model file: <code>Qwen3.6-35B-A3B-MTP-IQ4_XS.gguf</code> = <strong>19.4 GB</strong></p>
+
+    <h2 id="quantization">Quantization</h2>
+
+    <p>Weights are originally 32-bit floats (4 bytes each). Quantization compresses them to fewer bits to save space with minimal quality loss.</p>
+
+    <p>Your model uses:</p>
+
+    <pre><code>IQ4_XS  ← ~4.25 bits per weight (gate, up experts)
+Q5_K    ← ~5.5 bits per weight (down experts — higher quality)</code></pre>
+
+    <h2>The Numbers for Your Model</h2>
+
+    <table>
+      <thead><tr><th>Term</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Blocks</td><td>40</td></tr>
+        <tr><td>Experts per block</td><td>256</td></tr>
+        <tr><td>Active experts per token per block</td><td>8</td></tr>
+        <tr><td>Tensors per block (expert weights)</td><td>3 (gate, up, down)</td></tr>
+        <tr><td>Size of all experts (one block)</td><td>~448 MB</td></tr>
+        <tr><td>Size per expert per block</td><td>~1.75 MB</td></tr>
+        <tr><td>Total expert weights (all blocks)</td><td>~17.75 GB</td></tr>
+        <tr><td>Data needed per token per block</td><td>8 × 1.75 MB = 14 MB</td></tr>
+      </tbody>
+    </table>
+
+    <div class="insight">
+      <p>Understanding these terms makes every subsequent experiment post click. The next experiments build on this foundation to understand where tokens/sec comes from — and how to get more.</p>
+    </div>
+
+    <div class="next-post">
+      <div class="next-label">Next — Experiment 01</div>
+      <div class="next-title">Running Qwen3.6 35B at 40 TPS on Consumer Hardware</div>
+      <p class="next-desc">Ollama leaves 2.2× performance on the table for MoE models. A deep dive into memory bandwidth hierarchy and why GPU utilization % is a misleading metric.</p>
+    </div>
+
+  </div>
+</div>
+
+<footer>compiledthoughts.dev · Local AI Infrastructure Research · 2026</footer>
+
+</body>
+</html>
